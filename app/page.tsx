@@ -6,8 +6,32 @@ import SearchBar from "@/components/SearchBar";
 import MovieCard from "@/components/MovieCard";
 import SentimentCard from "@/components/SentimentCard";
 import Loader from "@/components/Loader";
+import ReviewsList from "@/components/ReviewsList";
 import type { MovieResponse } from "@/types/movie";
 import type { AnalyzeResponse } from "@/types/ai";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.05,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut" as const,
+    },
+  },
+};
 
 export default function Home() {
   const [imdbID, setImdbID] = useState("");
@@ -73,35 +97,37 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-4xl space-y-8 px-6 py-12">
-        <motion.header
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="space-y-3"
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        className="mx-auto max-w-6xl space-y-10 px-8 py-16"
+      >
+        <motion.section
+          variants={itemVariants}
+          className="rounded-2xl border border-blue-100 bg-gradient-to-br from-white via-slate-50 to-blue-50 p-6 shadow-md sm:p-10"
         >
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">AI Movie Insight Builder</h1>
-          <p className="text-base text-slate-600">
-            Fetch movie data and turn audience reviews into structured AI insights.
-          </p>
-        </motion.header>
+          <div className="mx-auto max-w-4xl space-y-6 text-center">
+            <div className="space-y-3">
+              <h1 className="text-4xl font-bold tracking-tight text-slate-900">AI Movie Insight Builder</h1>
+              <p className="text-lg text-slate-600">
+                Discover movie intelligence with cinematic metadata, audience review mining, and AI-powered sentiment analysis.
+              </p>
+            </div>
+            <SearchBar imdbID={imdbID} onChange={setImdbID} onSubmit={handleAnalyze} loading={loading} />
+          </div>
+        </motion.section>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.05 }}
-        >
-          <SearchBar imdbID={imdbID} onChange={setImdbID} onSubmit={handleAnalyze} loading={loading} />
-        </motion.div>
-
-        {loading && <Loader />}
+        {loading && (
+          <motion.div variants={itemVariants}>
+            <Loader />
+          </motion.div>
+        )}
 
         {error && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700 shadow-sm"
+            variants={itemVariants}
+            className="rounded-2xl border border-rose-200 bg-rose-50 p-5 text-base text-rose-700 shadow-sm"
           >
             {error}
           </motion.div>
@@ -109,18 +135,31 @@ export default function Home() {
 
         {infoMessage && !error && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="rounded-2xl border border-slate-200 bg-slate-100 p-4 text-sm text-slate-700 shadow-sm"
+            variants={itemVariants}
+            className="rounded-2xl border border-slate-200 bg-white p-5 text-base text-slate-600 shadow-sm"
           >
             {infoMessage}
           </motion.div>
         )}
 
-        {movieData && <MovieCard movie={movieData.movie} reviewCount={movieData.reviews.length} />}
-        {insights && <SentimentCard insights={insights} />}
-      </div>
+        {movieData && (
+          <motion.div variants={itemVariants}>
+            <MovieCard movie={movieData.movie} reviewCount={movieData.reviews.length} />
+          </motion.div>
+        )}
+
+        {insights && (
+          <motion.div variants={itemVariants}>
+            <SentimentCard insights={insights} />
+          </motion.div>
+        )}
+
+        {movieData && insights && movieData.reviews.length > 0 && (
+          <motion.div variants={itemVariants}>
+            <ReviewsList reviews={movieData.reviews} />
+          </motion.div>
+        )}
+      </motion.div>
     </main>
   );
 }

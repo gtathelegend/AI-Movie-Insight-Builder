@@ -7,7 +7,7 @@ A production-ready Next.js internship assignment that accepts an IMDb ID, fetche
 The app flow is:
 
 1. User enters IMDb ID (example: `tt0133093`)
-2. `GET /api/movie` fetches movie metadata from OMDb and reviews from TMDb
+2. `GET /api/movie` fetches movie metadata from OMDb and reviews via TMDb (primary) + IMDb scraping (fallback)
 3. `POST /api/analyze` sends reviews to OpenRouter for structured JSON insights
 4. Response is validated with Zod
 5. Sentiment classification is computed locally (`positive | mixed | negative`)

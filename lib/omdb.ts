@@ -50,7 +50,6 @@ export async function getMovieMetadata(imdbID: string): Promise<Movie> {
             .split(",")
             .map((name) => name.trim())
             .filter((name) => name.length > 0)
-            .slice(0, 5)
         : [],
     };
   } catch (error) {

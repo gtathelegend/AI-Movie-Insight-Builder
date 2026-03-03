@@ -60,7 +60,7 @@ Rules:
 Reviews:\n${reviews.join("\n---\n")}`;
 
   try {
-    const modelsToTry = ["openai/gpt-oss-120b:free"];
+    const modelsToTry = ["openai/gpt-4o-mini"];
     let lastRequestError: unknown = null;
 
     for (const model of modelsToTry) {
