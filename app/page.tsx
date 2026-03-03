@@ -118,15 +118,13 @@ export default function Home() {
           </div>
         </motion.section>
 
-        {loading && (
-          <motion.div variants={itemVariants}>
-            <Loader />
-          </motion.div>
-        )}
+        {loading && <Loader />}
 
         {error && (
           <motion.div
-            variants={itemVariants}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: "easeOut" }}
             className="rounded-2xl border border-rose-200 bg-rose-50 p-5 text-base text-rose-700 shadow-sm"
           >
             {error}
@@ -135,7 +133,9 @@ export default function Home() {
 
         {infoMessage && !error && (
           <motion.div
-            variants={itemVariants}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: "easeOut" }}
             className="rounded-2xl border border-slate-200 bg-white p-5 text-base text-slate-600 shadow-sm"
           >
             {infoMessage}
@@ -143,19 +143,31 @@ export default function Home() {
         )}
 
         {movieData && (
-          <motion.div variants={itemVariants}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
             <MovieCard movie={movieData.movie} reviewCount={movieData.reviews.length} />
           </motion.div>
         )}
 
         {insights && (
-          <motion.div variants={itemVariants}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
             <SentimentCard insights={insights} />
           </motion.div>
         )}
 
         {movieData && insights && movieData.reviews.length > 0 && (
-          <motion.div variants={itemVariants}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
             <ReviewsList reviews={movieData.reviews} />
           </motion.div>
         )}
