@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
 
     const reviewsForAnalysis = reviews.slice(0, 10);
 
-    const keyBase = payload.imdbID ? payload.imdbID : reviewsForAnalysis.join("|");
+    const keyBase = payload.imdbID ? `v2:${payload.imdbID}` : `v2:${reviewsForAnalysis.join("|")}`;
     const cacheKey = hashInput(keyBase);
 
     const cached = getCache<AnalyzeResponse>(cacheKey);

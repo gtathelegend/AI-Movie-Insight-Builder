@@ -50,12 +50,18 @@ export async function analyzeReviewsWithAI(reviews: string[]): Promise<AIInsight
   const prompt = `You are analyzing audience movie reviews. Return ONLY strict JSON with this exact shape:
 {
   "summary": string,
+  "keyThemes": string[],
+  "pros": string[],
+  "cons": string[],
   "sentimentScore": number
 }
 Rules:
 - sentimentScore must be between -1 and 1.
 - Do not include markdown, code fences, or extra text.
 - Summary should be 3-4 lines in plain text.
+- keyThemes should include 3-6 concise recurring topics.
+- pros should include 3-6 positive points from reviews.
+- cons should include 3-6 negative points from reviews.
 
 Reviews:\n${reviews.join("\n---\n")}`;
 

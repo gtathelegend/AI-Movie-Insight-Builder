@@ -12,15 +12,9 @@ const badgeStyles: Record<AnalyzeResponse["classification"], string> = {
 };
 
 export default function SentimentCard({ insights }: SentimentCardProps) {
-  const optionalInsights = insights as AnalyzeResponse & {
-    keyThemes?: string[];
-    pros?: string[];
-    cons?: string[];
-  };
-
-  const keyThemes = Array.isArray(optionalInsights.keyThemes) ? optionalInsights.keyThemes : [];
-  const pros = Array.isArray(optionalInsights.pros) ? optionalInsights.pros : [];
-  const cons = Array.isArray(optionalInsights.cons) ? optionalInsights.cons : [];
+  const keyThemes = insights.keyThemes;
+  const pros = insights.pros;
+  const cons = insights.cons;
 
   const normalized = ((insights.sentimentScore + 1) / 2) * 100;
   const progress = Math.max(0, Math.min(100, normalized));
@@ -54,7 +48,7 @@ export default function SentimentCard({ insights }: SentimentCardProps) {
               </span>
             ))
           ) : (
-            <span className="text-sm text-slate-500">Theme extraction is unavailable for this response format.</span>
+            <span className="text-sm text-slate-500">No strong recurring themes detected.</span>
           )}
         </div>
       </section>
@@ -71,7 +65,7 @@ export default function SentimentCard({ insights }: SentimentCardProps) {
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-slate-500">Pros are unavailable for this response format.</p>
+            <p className="text-sm text-slate-500">No major positive patterns detected.</p>
           )}
         </div>
 
@@ -86,7 +80,7 @@ export default function SentimentCard({ insights }: SentimentCardProps) {
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-slate-500">Cons are unavailable for this response format.</p>
+            <p className="text-sm text-slate-500">No major negative patterns detected.</p>
           )}
         </div>
       </section>

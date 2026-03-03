@@ -10,6 +10,7 @@ export default function SearchBar({ imdbID, onChange, onSubmit, loading }: Searc
     <section className="w-full rounded-2xl border border-white/60 bg-white/85 p-4 shadow-md backdrop-blur-sm sm:p-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <input
+          suppressHydrationWarning
           value={imdbID}
           onChange={(event) => onChange(event.target.value)}
           onKeyDown={(event) => {
@@ -22,6 +23,7 @@ export default function SearchBar({ imdbID, onChange, onSubmit, loading }: Searc
           aria-label="IMDb ID"
         />
         <button
+          suppressHydrationWarning
           onClick={onSubmit}
           disabled={loading}
           className="h-14 rounded-full bg-blue-600 px-8 text-base font-semibold text-white shadow-md transition duration-300 hover:scale-[1.03] hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
