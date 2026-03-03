@@ -45,7 +45,13 @@ export async function getMovieMetadata(imdbID: string): Promise<Movie> {
       year: data.Year ?? "Unknown",
       rating: data.imdbRating ?? "N/A",
       plot: data.Plot ?? "No plot available.",
-      cast: data.Actors ? data.Actors.split(",").map((name) => name.trim()) : [],
+      cast: data.Actors
+        ? data.Actors
+            .split(",")
+            .map((name) => name.trim())
+            .filter((name) => name.length > 0)
+            .slice(0, 5)
+        : [],
     };
   } catch (error) {
     if (error instanceof ApiError) {

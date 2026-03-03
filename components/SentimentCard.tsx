@@ -1,60 +1,49 @@
 import type { AnalyzeResponse } from "@/types/ai";
+import { motion } from "framer-motion";
 
 type SentimentCardProps = {
   insights: AnalyzeResponse;
 };
 
 const badgeStyles: Record<AnalyzeResponse["classification"], string> = {
-  positive: "bg-emerald-500/20 text-emerald-300 border-emerald-400/40",
-  mixed: "bg-amber-500/20 text-amber-300 border-amber-400/40",
-  negative: "bg-rose-500/20 text-rose-300 border-rose-400/40",
+  positive: "bg-green-100 text-green-700",
+  mixed: "bg-yellow-100 text-yellow-700",
+  negative: "bg-red-100 text-red-700",
 };
 
 export default function SentimentCard({ insights }: SentimentCardProps) {
+  const normalized = ((insights.sentimentScore + 1) / 2) * 100;
+  const progress = Math.max(0, Math.min(100, normalized));
+
   return (
-    <section className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm sm:p-6">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h3 className="text-xl font-semibold text-white">Audience Insight</h3>
-        <span className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide ${badgeStyles[insights.classification]}`}>
+    <motion.section
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+    >
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <h3 className="text-xl font-medium text-slate-900">Audience Insight</h3>
+        <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${badgeStyles[insights.classification]}`}>
           {insights.classification}
         </span>
       </div>
 
-      <p className="mb-4 text-sm leading-6 text-zinc-200">{insights.summary}</p>
+      <p className="mb-6 text-base leading-relaxed text-slate-600">{insights.summary}</p>
 
-      <div className="mb-4">
-        <p className="mb-2 text-sm font-semibold text-zinc-100">Key Themes</p>
-        <div className="flex flex-wrap gap-2">
-          {insights.keyThemes.map((theme) => (
-            <span key={theme} className="rounded-full bg-white/10 px-3 py-1 text-xs text-zinc-200">
-              {theme}
-            </span>
-          ))}
+      <div className="mt-6 space-y-2">
+        <div className="text-sm text-slate-600">
+          Sentiment score: <span className="font-medium text-slate-900">{insights.sentimentScore.toFixed(2)}</span>
+        </div>
+        <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
+          <motion.div
+            className="h-full rounded-full bg-blue-500"
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+          />
         </div>
       </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <p className="mb-2 text-sm font-semibold text-emerald-300">Pros</p>
-          <ul className="space-y-1 text-sm text-zinc-200">
-            {insights.pros.map((item) => (
-              <li key={item}>• {item}</li>
-            ))}
-          </ul>
-        </div>
-        <div>
-          <p className="mb-2 text-sm font-semibold text-rose-300">Cons</p>
-          <ul className="space-y-1 text-sm text-zinc-200">
-            {insights.cons.map((item) => (
-              <li key={item}>• {item}</li>
-            ))}
-          </ul>
-        </div>
-      </div>
-
-      <div className="mt-5 text-sm text-zinc-300">
-        Sentiment score: <span className="font-semibold text-white">{insights.sentimentScore.toFixed(2)}</span>
-      </div>
-    </section>
+    </motion.section>
   );
 }

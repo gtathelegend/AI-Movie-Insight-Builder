@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getMovieMetadata } from "@/lib/omdb";
-import { getMovieReviews } from "@/lib/reviews";
+import { getReviews } from "@/lib/reviews";
 import { ApiError } from "@/lib/utils";
 
 export async function GET(request: NextRequest) {
@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const movie = await getMovieMetadata(imdbID);
-    const reviews = await getMovieReviews(imdbID);
+    const reviews = await getReviews(imdbID);
 
     return NextResponse.json({
       movie,

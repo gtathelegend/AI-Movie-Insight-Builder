@@ -17,12 +17,14 @@ export async function POST(request: NextRequest) {
 
     if (!Array.isArray(reviews) || reviews.length === 0) {
       return NextResponse.json(
-        { error: "At least one review is required for analysis." },
+        { error: "No audience reviews available for sentiment analysis." },
         { status: 400 },
       );
     }
 
-    const keyBase = payload.imdbID ? payload.imdbID : reviews.join("|");
+    const reviewsForAnalysis = reviews.slice(0, 10);
+
+    const keyBase = payload.imdbID ? payload.imdbID : reviewsForAnalysis.join("|");
     const cacheKey = hashInput(keyBase);
 
     const cached = getCache<AnalyzeResponse>(cacheKey);
@@ -30,7 +32,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ...cached, fromCache: true });
     }
 
-    const aiRaw = await analyzeReviewsWithAI(reviews);
+    const aiRaw = await analyzeReviewsWithAI(reviewsForAnalysis);
     const validated = aiInsightsSchema.safeParse(aiRaw);
 
     if (!validated.success) {

@@ -10,4 +10,5 @@ export type Movie = {
 export type MovieResponse = {
   movie: Movie;
   reviews: string[];
+  hasReviews?: boolean;
 };

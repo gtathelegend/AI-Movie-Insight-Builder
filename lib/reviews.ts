@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ApiError } from "@/lib/utils";
+import { scrapeIMDbReviews } from "@/lib/imdbScraper";
 
 type TmdbFindResponse = {
   movie_results: Array<{ id: number }>;
@@ -11,11 +11,11 @@ type TmdbReviewsResponse = {
   }>;
 };
 
-export async function getMovieReviews(imdbID: string): Promise<string[]> {
+export async function getTMDbReviews(imdbID: string): Promise<string[]> {
   const apiKey = process.env.TMDB_API_KEY;
 
   if (!apiKey) {
-    throw new ApiError("TMDB_API_KEY is missing.", 500);
+    return [];
   }
 
   try {
@@ -48,6 +48,16 @@ export async function getMovieReviews(imdbID: string): Promise<string[]> {
       .filter((text) => text.length > 0)
       .slice(0, 20);
   } catch {
-    throw new ApiError("Failed to fetch audience reviews.", 500);
+    return [];
   }
+}
+
+export async function getReviews(imdbID: string): Promise<string[]> {
+  let reviews = await getTMDbReviews(imdbID);
+
+  if (!reviews || reviews.length === 0) {
+    reviews = await scrapeIMDbReviews(imdbID);
+  }
+
+  return reviews;
 }

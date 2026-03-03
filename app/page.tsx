@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import SearchBar from "@/components/SearchBar";
 import MovieCard from "@/components/MovieCard";
 import SentimentCard from "@/components/SentimentCard";
@@ -14,6 +15,7 @@ export default function Home() {
   const [insights, setInsights] = useState<AnalyzeResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [infoMessage, setInfoMessage] = useState<string | null>(null);
 
   const handleAnalyze = async () => {
     const normalizedId = imdbID.trim();
@@ -24,6 +26,7 @@ export default function Home() {
 
     setLoading(true);
     setError(null);
+    setInfoMessage(null);
     setMovieData(null);
     setInsights(null);
 
@@ -38,7 +41,7 @@ export default function Home() {
       setMovieData(movieJson);
 
       if (!movieJson.reviews || movieJson.reviews.length === 0) {
-        setError("No audience reviews found for this movie.");
+        setInfoMessage("Insufficient audience reviews for AI sentiment analysis.");
         return;
       }
 
@@ -49,7 +52,7 @@ export default function Home() {
         },
         body: JSON.stringify({
           imdbID: normalizedId,
-          reviews: movieJson.reviews,
+          reviews: movieJson.reviews.slice(0, 10),
         }),
       });
 
@@ -69,23 +72,50 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,#0f172a,#020617)] px-4 py-10 text-white sm:px-6">
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-        <header className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">AI Movie Insight Builder</h1>
-          <p className="text-sm text-zinc-300 sm:text-base">
+    <main className="min-h-screen bg-slate-50">
+      <div className="mx-auto max-w-4xl space-y-8 px-6 py-12">
+        <motion.header
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="space-y-3"
+        >
+          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">AI Movie Insight Builder</h1>
+          <p className="text-base text-slate-600">
             Fetch movie data and turn audience reviews into structured AI insights.
           </p>
-        </header>
+        </motion.header>
 
-        <SearchBar imdbID={imdbID} onChange={setImdbID} onSubmit={handleAnalyze} loading={loading} />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.05 }}
+        >
+          <SearchBar imdbID={imdbID} onChange={setImdbID} onSubmit={handleAnalyze} loading={loading} />
+        </motion.div>
 
         {loading && <Loader />}
 
         {error && (
-          <div className="rounded-xl border border-rose-400/40 bg-rose-500/10 p-4 text-sm text-rose-200">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700 shadow-sm"
+          >
             {error}
-          </div>
+          </motion.div>
+        )}
+
+        {infoMessage && !error && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="rounded-2xl border border-slate-200 bg-slate-100 p-4 text-sm text-slate-700 shadow-sm"
+          >
+            {infoMessage}
+          </motion.div>
         )}
 
         {movieData && <MovieCard movie={movieData.movie} reviewCount={movieData.reviews.length} />}
