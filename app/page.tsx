@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import SearchBar from "@/components/SearchBar";
 import MovieCard from "@/components/MovieCard";
 import SentimentCard from "@/components/SentimentCard";
@@ -40,6 +40,17 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 1024px)");
+
+    const sync = () => setIsDesktop(mediaQuery.matches);
+    sync();
+
+    mediaQuery.addEventListener("change", sync);
+    return () => mediaQuery.removeEventListener("change", sync);
+  }, []);
 
   const handleAnalyze = async () => {
     const normalizedId = imdbID.trim();
@@ -144,21 +155,40 @@ export default function Home() {
 
         {movieData && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
+            layout
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+            className={insights ? "grid items-start gap-6 lg:grid-cols-2" : "grid grid-cols-1"}
           >
-            <MovieCard movie={movieData.movie} reviewCount={movieData.reviews.length} />
-          </motion.div>
-        )}
+            <motion.div
+              layout
+              layoutId="movie-panel"
+              animate={
+                isDesktop && insights
+                  ? { x: -20, scale: 0.98, filter: "blur(0px)" }
+                  : { x: 0, scale: 1, filter: "blur(0px)" }
+              }
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+              className={insights ? "rounded-2xl shadow-md ring-1 ring-blue-100" : ""}
+            >
+              <MovieCard movie={movieData.movie} reviewCount={movieData.reviews.length} />
+            </motion.div>
 
-        {insights && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-          >
-            <SentimentCard insights={insights} />
+            <AnimatePresence>
+              {insights && (
+                <motion.div
+                  key="sentiment-panel"
+                  layout
+                  layoutId="insight-panel"
+                  initial={isDesktop ? { opacity: 0, x: 40, filter: "blur(8px)" } : { opacity: 0, y: 16, filter: "blur(6px)" }}
+                  animate={{ opacity: 1, x: 0, y: 0, filter: "blur(0px)", scale: [0.99, 1.01, 1] }}
+                  exit={isDesktop ? { opacity: 0, x: 24 } : { opacity: 0, y: 10 }}
+                  transition={{ duration: 0.5, delay: 0.15, ease: "easeInOut", times: [0, 0.75, 1] }}
+                  className="rounded-2xl shadow-md ring-1 ring-blue-100"
+                >
+                  <SentimentCard insights={insights} />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         )}
 

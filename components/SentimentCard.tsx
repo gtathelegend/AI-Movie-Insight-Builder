@@ -11,6 +11,30 @@ const badgeStyles: Record<AnalyzeResponse["classification"], string> = {
   negative: "bg-red-100 text-red-700",
 };
 
+const panelVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.04,
+    },
+  },
+};
+
+const childVariants = {
+  hidden: { opacity: 0, y: 12, filter: "blur(4px)" },
+  show: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: {
+      duration: 0.45,
+      ease: "easeOut" as const,
+    },
+  },
+};
+
 export default function SentimentCard({ insights }: SentimentCardProps) {
   const keyThemes = insights.keyThemes;
   const pros = insights.pros;
@@ -21,24 +45,25 @@ export default function SentimentCard({ insights }: SentimentCardProps) {
 
   return (
     <motion.section
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      variants={panelVariants}
+      initial="hidden"
+      animate="show"
+      transition={{ duration: 0.5, ease: "easeInOut" }}
       className="rounded-2xl border border-slate-200 bg-white p-6 shadow-md transition hover:-translate-y-0.5 hover:shadow-md sm:p-8"
     >
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+      <motion.div variants={childVariants} className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h3 className="text-xl font-semibold text-slate-900">AI Sentiment Insight</h3>
         <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${badgeStyles[insights.classification]}`}>
           {insights.classification}
         </span>
-      </div>
+      </motion.div>
 
-      <section className="mb-6 rounded-2xl border border-slate-200 bg-slate-50 p-5">
+      <motion.section variants={childVariants} className="mb-6 rounded-2xl border border-slate-200 bg-slate-50 p-5">
         <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">AI Summary</h4>
         <p className="text-base leading-relaxed text-slate-700">{insights.summary}</p>
-      </section>
+      </motion.section>
 
-      <section className="mb-6">
+      <motion.section variants={childVariants} className="mb-6">
         <h4 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Key Themes</h4>
         <div className="flex flex-wrap gap-2">
           {keyThemes.length > 0 ? (
@@ -51,9 +76,9 @@ export default function SentimentCard({ insights }: SentimentCardProps) {
             <span className="text-sm text-slate-500">No strong recurring themes detected.</span>
           )}
         </div>
-      </section>
+      </motion.section>
 
-      <section className="mb-6 grid gap-5 md:grid-cols-2">
+      <motion.section variants={childVariants} className="mb-6 grid gap-5 md:grid-cols-2">
         <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 p-4">
           <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-emerald-700">Pros</h4>
           {pros.length > 0 ? (
@@ -83,9 +108,9 @@ export default function SentimentCard({ insights }: SentimentCardProps) {
             <p className="text-sm text-slate-500">No major negative patterns detected.</p>
           )}
         </div>
-      </section>
+      </motion.section>
 
-      <div className="mt-6 space-y-2">
+      <motion.div variants={childVariants} className="mt-6 space-y-2">
         <div className="text-sm text-slate-600">
           Sentiment score: <span className="font-medium text-slate-900">{insights.sentimentScore.toFixed(2)}</span>
         </div>
@@ -97,7 +122,7 @@ export default function SentimentCard({ insights }: SentimentCardProps) {
             transition={{ duration: 0.4, ease: "easeOut" }}
           />
         </div>
-      </div>
+      </motion.div>
     </motion.section>
   );
 }
