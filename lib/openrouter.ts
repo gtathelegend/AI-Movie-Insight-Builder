@@ -15,13 +15,15 @@ type OpenRouterResponse = {
   }>;
 };
 
-function getContentAsText(
-  content: OpenRouterResponse["choices"] extends Array<infer Choice>
-    ? Choice extends { message?: { content?: infer Content } }
-      ? Content
-      : never
-    : never,
-): string {
+type OpenRouterMessageContent =
+  | string
+  | Array<{
+      type?: string;
+      text?: string;
+    }>
+  | undefined;
+
+function getContentAsText(content: OpenRouterMessageContent): string {
   if (typeof content === "string") {
     return content;
   }
