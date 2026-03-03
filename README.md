@@ -1,39 +1,102 @@
 # AI Movie Insight Builder
 
-A production-ready Next.js internship assignment that accepts an IMDb ID, fetches movie metadata and audience reviews, runs AI analysis through OpenRouter, validates output with Zod, and displays structured sentiment insights in a responsive UI.
+AI Movie Insight Builder is a Next.js App Router application that takes an IMDb ID, fetches movie metadata, gathers audience reviews, runs AI sentiment analysis through OpenRouter, and presents a premium animated dashboard UI.
 
-## 1) Project Overview
+## Features (Current Working)
 
-The app flow is:
+- IMDb ID search with client-side validation (`tt` + digits).
+- Movie metadata from OMDb:
+  - title
+  - poster
+  - year
+  - IMDb rating
+  - plot
+  - cast list
+- Review pipeline:
+  - TMDb reviews as primary source (up to 20)
+  - IMDb review scraping fallback via `axios` + `cheerio` (up to 15)
+- AI sentiment analysis via OpenRouter (`openai/gpt-4o-mini`) using up to 10 reviews.
+- Strict Zod validation for AI response.
+- Local sentiment classification logic:
+  - `score > 0.3` => `positive`
+  - `score < -0.3` => `negative`
+  - otherwise => `mixed`
+- In-memory Map cache (TTL 1 hour) for analyze responses.
+- Cinematic animated UI with Framer Motion:
+  - hero/search animations
+  - movie + AI insight layout transitions
+  - staggered insight section reveals
+  - skeleton loading state
+- Reviews list shown after AI insight render.
+- Graceful no-review info state without hiding movie metadata.
 
-1. User enters IMDb ID (example: `tt0133093`)
-2. `GET /api/movie` fetches movie metadata from OMDb and reviews via TMDb (primary) + IMDb scraping (fallback)
-3. `POST /api/analyze` sends reviews to OpenRouter for structured JSON insights
-4. Response is validated with Zod
-5. Sentiment classification is computed locally (`positive | mixed | negative`)
-6. Results render in premium, mobile-friendly cards
+## API Overview
 
-## 2) Tech Stack Rationale
+### `GET /api/movie?imdbID={id}`
 
-- **Next.js (App Router)**: Full-stack in one codebase with API routes and great Vercel deployment fit.
-- **OpenRouter**: Flexible AI gateway and model routing (using `openai/gpt-4o-mini`) without direct OpenAI dependency.
-- **Zod**: Runtime validation of AI output to enforce strict, predictable API contracts.
-- **Map-based in-memory cache**: Fast, simple, interview-friendly TTL caching for repeated analyses.
-- **TailwindCSS + Framer Motion**: Clean responsive styling and subtle loading animation.
-- **Jest + Playwright**: Unit confidence for logic and one E2E path for user flow.
+Returns:
 
-## 3) Setup Instructions
+```json
+{
+  "movie": {
+    "title": "string",
+    "poster": "string",
+    "year": "string",
+    "rating": "string",
+    "plot": "string",
+    "cast": ["string"]
+  },
+  "reviews": ["string"],
+  "hasReviews": true
+}
+```
+
+### `POST /api/analyze`
+
+Input:
+
+```json
+{
+  "imdbID": "tt0133093",
+  "reviews": ["..."]
+}
+```
+
+Output:
+
+```json
+{
+  "summary": "string",
+  "keyThemes": ["string"],
+  "pros": ["string"],
+  "cons": ["string"],
+  "sentimentScore": 0.42,
+  "classification": "positive"
+}
+```
+
+## Tech Stack
+
+- Next.js 16 (App Router)
+- TypeScript
+- Tailwind CSS
+- Framer Motion
+- Axios
+- Zod
+- OpenRouter API
+- Jest
+- Playwright
+- Cheerio
+
+## Setup
+
+1. Install dependencies:
 
 ```bash
 npm install
-npm run dev
 ```
 
-Open `http://localhost:3000`.
-
-## 4) Environment Variables
-
-Create `.env.local` in project root:
+2. Create `.env.local` (or copy from `.env.example`) and add:
 
 ```bash
 OMDB_API_KEY=your_omdb_key
@@ -42,34 +105,29 @@ OPENROUTER_API_KEY=your_openrouter_key
 APP_URL=http://localhost:3000
 ```
 
-## 5) Assumptions
+3. Run locally:
 
-- TMDb reviews are used as audience review source and limited to max 20 entries.
-- Some movies may have no reviews; UI handles this gracefully.
-- Sentiment class is **not** AI-provided; it is derived in code from score thresholds.
-- In-memory cache is process-local (acceptable for assignment scope).
+```bash
+npm run dev
+```
 
-## 6) Deployment Steps (Vercel)
+4. Build production:
 
-1. Push repository to GitHub.
-2. Import project in Vercel.
-3. Set environment variables in Vercel Project Settings:
-   - `OMDB_API_KEY`
-   - `TMDB_API_KEY`
-   - `OPENROUTER_API_KEY`
-   - `APP_URL` (set to deployed URL)
-4. Deploy.
+```bash
+npm run build
+npm run start
+```
 
 ## Scripts
 
-- `npm run dev` – start local dev server
-- `npm run build` – production build
-- `npm run start` – serve production build
-- `npm run lint` – ESLint check
-- `npm run test` – Jest unit tests
-- `npm run test:e2e` – Playwright E2E tests
+- `npm run dev` — start development server
+- `npm run build` — production build
+- `npm run start` — run production server
+- `npm run lint` — lint project
+- `npm run test` — run unit tests
+- `npm run test:e2e` — run Playwright E2E test
 
-## Key Project Structure
+## Project Structure
 
 ```text
 app/
@@ -81,13 +139,15 @@ components/
   SearchBar.tsx
   MovieCard.tsx
   SentimentCard.tsx
+  ReviewsList.tsx
   Loader.tsx
 lib/
   omdb.ts
   reviews.ts
+  imdbScraper.ts
   openrouter.ts
-  cache.ts
   schema.ts
+  cache.ts
   utils.ts
 types/
   movie.ts
@@ -96,3 +156,20 @@ tests/
   sentiment.test.ts
   movie.e2e.spec.ts
 ```
+
+## Deployment (Vercel)
+
+1. Push repository to GitHub.
+2. Import project in Vercel.
+3. Configure environment variables:
+   - `OMDB_API_KEY`
+   - `TMDB_API_KEY`
+   - `OPENROUTER_API_KEY`
+   - `APP_URL` (set to deployed URL)
+4. Deploy.
+
+## Notes
+
+- If no reviews are found from both TMDb and IMDb, metadata still renders and the app shows a clean informational message.
+- AI insight panel is rendered only when analysis data is available.
+- Do not commit real API keys to version control.
