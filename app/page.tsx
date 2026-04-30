@@ -178,7 +178,7 @@ export default function Home() {
             <motion.div
               layout
               transition={{ duration: 0.5, ease: "easeInOut" }}
-              className={insights ? "grid items-start gap-6 lg:grid-cols-2" : "grid grid-cols-1"}
+              className={insights ? "grid items-start gap-6 lg:grid-cols-[3fr_2fr]" : "grid grid-cols-1"}
             >
               <motion.div
                 layout
@@ -214,13 +214,28 @@ export default function Home() {
           )}
 
           {movieData && insights && movieData.reviews.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-            >
-              <ReviewsList reviews={movieData.reviews} />
-            </motion.div>
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.4, delay: 0.2 }}
+                className="flex items-center gap-4"
+              >
+                <div className="h-px flex-1 bg-zinc-100" />
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-zinc-300">
+                  Audience Reviews
+                </span>
+                <div className="h-px flex-1 bg-zinc-100" />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+              >
+                <ReviewsList reviews={movieData.reviews} />
+              </motion.div>
+            </>
           )}
         </motion.div>
 
