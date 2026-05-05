@@ -1,5 +1,6 @@
+import { useRef, useEffect } from "react";
+import gsap from "gsap";
 import type { AnalyzeResponse } from "@/types/ai";
-import { motion } from "framer-motion";
 
 type SentimentCardProps = {
   insights: AnalyzeResponse;
@@ -29,24 +30,6 @@ const classificationConfig: Record<
   },
 };
 
-const panelVariants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.09, delayChildren: 0.05 },
-  },
-};
-
-const childVariants = {
-  hidden: { opacity: 0, y: 14, filter: "blur(4px)" },
-  show: {
-    opacity: 1,
-    y: 0,
-    filter: "blur(0px)",
-    transition: { duration: 0.45, ease: "easeOut" as const },
-  },
-};
-
 function scoreLabel(score: number): string {
   if (score >= 0.7) return "Highly positive";
   if (score >= 0.3) return "Positive";
@@ -56,28 +39,64 @@ function scoreLabel(score: number): string {
 }
 
 export default function SentimentCard({ insights }: SentimentCardProps) {
+  const sectionRef = useRef<HTMLElement>(null);
   const cfg = classificationConfig[insights.classification];
   const normalized = ((insights.sentimentScore + 1) / 2) * 100;
   const progress = Math.max(0, Math.min(100, normalized));
 
+  useEffect(() => {
+    if (!sectionRef.current) return;
+
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
+
+      tl.fromTo(".sc-header",
+        { x: -16, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.42 }
+      )
+      .fromTo(".sc-score-block",
+        { scale: 0.93, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.52 },
+        "<0.1"
+      )
+      .fromTo(".sc-progress",
+        { width: "0%" },
+        { width: `${progress}%`, duration: 0.9, ease: "power2.inOut" },
+        "<0.18"
+      )
+      .fromTo(".sc-summary",
+        { x: -12, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.46 },
+        "<0.45"
+      )
+      .fromTo(".sc-theme-chip",
+        { scale: 0.78, opacity: 0 },
+        { scale: 1, opacity: 1, stagger: 0.055, duration: 0.34 },
+        "<0.1"
+      )
+      .fromTo([".sc-pros", ".sc-cons"],
+        { y: 14, opacity: 0 },
+        { y: 0, opacity: 1, stagger: 0.1, duration: 0.46 },
+        "<0.1"
+      );
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, [progress]);
+
   return (
-    <motion.section
-      variants={panelVariants}
-      initial="hidden"
-      animate="show"
+    <section
+      ref={sectionRef}
       className="flex h-full flex-col rounded-2xl border border-zinc-100 bg-white shadow-sm"
     >
       {/* Card header */}
-      <div className="border-b border-zinc-100 px-6 py-4 sm:px-8">
+      <div className="sc-header border-b border-zinc-100 px-6 py-4 sm:px-8">
         <h3 className="text-sm font-semibold text-zinc-900">AI Sentiment Insight</h3>
       </div>
 
       <div className="flex flex-col gap-6 p-6 sm:p-8">
         {/* Score hero block */}
-        <motion.div
-          variants={childVariants}
-          className={`rounded-xl border p-4 ${cfg.bg} ${cfg.border}`}
-        >
+        <div className={`sc-score-block rounded-xl border p-4 ${cfg.bg} ${cfg.border}`}>
           <div className="flex items-start justify-between">
             <div>
               <div className="mb-1 flex items-center gap-2">
@@ -99,12 +118,12 @@ export default function SentimentCard({ insights }: SentimentCardProps) {
 
           <div className="mt-4 space-y-1">
             <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/70">
-              <motion.div
-                className="h-full rounded-full"
-                style={{ background: "linear-gradient(to right, #f87171, #fbbf24, #34d399)" }}
-                initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
-                transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
+              <div
+                className="sc-progress h-full rounded-full"
+                style={{
+                  background: "linear-gradient(to right, #f87171, #fbbf24, #34d399)",
+                  width: 0,
+                }}
               />
             </div>
             <div className="flex justify-between text-[10px] text-zinc-300">
@@ -112,18 +131,18 @@ export default function SentimentCard({ insights }: SentimentCardProps) {
               <span>Positive</span>
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* Summary */}
-        <motion.div variants={childVariants} className="border-l-2 border-zinc-200 pl-4">
+        <div className="sc-summary border-l-2 border-zinc-200 pl-4">
           <h4 className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-zinc-400">
             Summary
           </h4>
           <p className="text-sm leading-relaxed text-zinc-700">{insights.summary}</p>
-        </motion.div>
+        </div>
 
         {/* Key Themes */}
-        <motion.div variants={childVariants}>
+        <div>
           <h4 className="mb-2.5 text-[10px] font-semibold uppercase tracking-widest text-zinc-400">
             Key Themes
           </h4>
@@ -132,7 +151,7 @@ export default function SentimentCard({ insights }: SentimentCardProps) {
               insights.keyThemes.map((theme) => (
                 <span
                   key={theme}
-                  className="rounded-lg bg-zinc-100 px-2.5 py-1 text-xs text-zinc-600"
+                  className="sc-theme-chip rounded-lg bg-zinc-100 px-2.5 py-1 text-xs text-zinc-600"
                 >
                   {theme}
                 </span>
@@ -141,14 +160,11 @@ export default function SentimentCard({ insights }: SentimentCardProps) {
               <span className="text-xs text-zinc-400">No recurring themes detected.</span>
             )}
           </div>
-        </motion.div>
+        </div>
 
         {/* Pros / Cons */}
-        <motion.div
-          variants={childVariants}
-          className="grid gap-5 border-t border-zinc-100 pt-5 md:grid-cols-2"
-        >
-          <div>
+        <div className="grid gap-5 border-t border-zinc-100 pt-5 md:grid-cols-2">
+          <div className="sc-pros">
             <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-zinc-400">
               Pros
             </h4>
@@ -166,7 +182,7 @@ export default function SentimentCard({ insights }: SentimentCardProps) {
             )}
           </div>
 
-          <div>
+          <div className="sc-cons">
             <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-zinc-400">
               Cons
             </h4>
@@ -183,8 +199,8 @@ export default function SentimentCard({ insights }: SentimentCardProps) {
               <p className="text-xs text-zinc-400">No major negatives detected.</p>
             )}
           </div>
-        </motion.div>
+        </div>
       </div>
-    </motion.section>
+    </section>
   );
 }

@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useState, useRef, useEffect } from "react";
+import { motion } from "framer-motion";
+import gsap from "gsap";
 import SearchBar from "@/components/SearchBar";
 import MovieCard from "@/components/MovieCard";
 import SentimentCard from "@/components/SentimentCard";
@@ -14,10 +15,7 @@ const containerVariants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.05,
-    },
+    transition: { staggerChildren: 0.08, delayChildren: 0.05 },
   },
 };
 
@@ -26,10 +24,7 @@ const itemVariants = {
   show: {
     opacity: 1,
     y: 0,
-    transition: {
-      duration: 0.5,
-      ease: "easeOut" as const,
-    },
+    transition: { duration: 0.5, ease: "easeOut" as const },
   },
 };
 
@@ -40,15 +35,31 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
-  const [isDesktop, setIsDesktop] = useState(false);
 
+  const leftPanelRef = useRef<HTMLDivElement>(null);
+  const rightPanelRef = useRef<HTMLDivElement>(null);
+
+  // Panel-level GSAP: left slides from left, right rises from right
   useEffect(() => {
-    const mediaQuery = window.matchMedia("(min-width: 1024px)");
-    const sync = () => setIsDesktop(mediaQuery.matches);
-    sync();
-    mediaQuery.addEventListener("change", sync);
-    return () => mediaQuery.removeEventListener("change", sync);
-  }, []);
+    if (!insights || !leftPanelRef.current || !rightPanelRef.current) return;
+
+    const ctx = gsap.context(() => {
+      gsap.timeline()
+        .fromTo(
+          leftPanelRef.current,
+          { x: -80, opacity: 0 },
+          { x: 0, opacity: 1, duration: 0.72, ease: "power3.out" }
+        )
+        .fromTo(
+          rightPanelRef.current,
+          { x: 80, y: 40, opacity: 0 },
+          { x: 0, y: 0, opacity: 1, duration: 0.72, ease: "power3.out" },
+          "<0.1"
+        );
+    });
+
+    return () => ctx.revert();
+  }, [insights]);
 
   const handleAnalyze = async () => {
     const normalizedId = imdbID.trim();
@@ -67,10 +78,7 @@ export default function Home() {
       const movieRes = await fetch(`/api/movie?imdbID=${encodeURIComponent(normalizedId)}`);
       const movieJson = (await movieRes.json()) as MovieResponse & { error?: string };
 
-      if (!movieRes.ok) {
-        throw new Error(movieJson.error ?? "Failed to fetch movie details.");
-      }
-
+      if (!movieRes.ok) throw new Error(movieJson.error ?? "Failed to fetch movie details.");
       setMovieData(movieJson);
 
       if (!movieJson.reviews || movieJson.reviews.length === 0) {
@@ -81,22 +89,14 @@ export default function Home() {
       const analyzeRes = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          imdbID: normalizedId,
-          reviews: movieJson.reviews.slice(0, 10),
-        }),
+        body: JSON.stringify({ imdbID: normalizedId, reviews: movieJson.reviews.slice(0, 10) }),
       });
 
       const analyzeJson = (await analyzeRes.json()) as AnalyzeResponse & { error?: string };
-
-      if (!analyzeRes.ok) {
-        throw new Error(analyzeJson.error ?? "AI analysis failed.");
-      }
-
+      if (!analyzeRes.ok) throw new Error(analyzeJson.error ?? "AI analysis failed.");
       setInsights(analyzeJson);
     } catch (unknownError) {
-      const message = unknownError instanceof Error ? unknownError.message : "Unexpected error.";
-      setError(message);
+      setError(unknownError instanceof Error ? unknownError.message : "Unexpected error.");
     } finally {
       setLoading(false);
     }
@@ -106,7 +106,7 @@ export default function Home() {
     <>
       {/* Fixed header */}
       <header className="fixed left-0 right-0 top-0 z-50 flex h-14 items-center border-b border-zinc-100 bg-white/80 px-6 backdrop-blur-md">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between">
+        <div className="mx-auto flex w-full max-w-5xl items-center justify-between">
           <span className="text-sm font-semibold tracking-tight text-zinc-900">AI Movie Insights</span>
           <a
             href="https://github.com/vedaangsharma"
@@ -127,16 +127,16 @@ export default function Home() {
           variants={containerVariants}
           initial="hidden"
           animate="show"
-          className="mx-auto max-w-6xl space-y-8 px-6 pb-20 pt-32"
+          className="mx-auto max-w-6xl space-y-6 px-6 pb-20 pt-32"
         >
           {/* Hero */}
-          <motion.section variants={itemVariants} className="space-y-6 pb-4 text-center">
-            <div className="space-y-3">
+          <motion.section variants={itemVariants} className="space-y-5 pb-2 text-center">
+            <div className="space-y-2">
               <h1 className="bg-gradient-to-b from-zinc-900 to-zinc-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent">
                 AI Movie Insights
               </h1>
-              <p className="mx-auto max-w-lg text-base text-zinc-500">
-                Enter an IMDb ID to get cinematic metadata, audience reviews, and AI-powered sentiment analysis.
+              <p className="mx-auto max-w-sm text-sm text-zinc-400">
+                Enter an IMDb ID to get metadata, audience reviews, and AI sentiment analysis.
               </p>
             </div>
             <SearchBar imdbID={imdbID} onChange={setImdbID} onSubmit={handleAnalyze} loading={loading} />
@@ -174,68 +174,27 @@ export default function Home() {
             </motion.div>
           )}
 
-          {movieData && (
-            <motion.div
-              layout
-              transition={{ duration: 0.5, ease: "easeInOut" }}
-              className={insights ? "grid items-start gap-6 lg:grid-cols-[3fr_2fr]" : "grid grid-cols-1"}
-            >
-              <motion.div
-                layout
-                layoutId="movie-panel"
-                animate={
-                  isDesktop && insights
-                    ? { x: -20, scale: 0.98, filter: "blur(0px)" }
-                    : { x: 0, scale: 1, filter: "blur(0px)" }
-                }
-                transition={{ duration: 0.5, ease: "easeInOut" }}
-                className={insights ? "rounded-2xl shadow-sm ring-1 ring-zinc-100" : ""}
-              >
-                <MovieCard movie={movieData.movie} reviewCount={movieData.reviews.length} />
-              </motion.div>
-
-              <AnimatePresence>
-                {insights && (
-                  <motion.div
-                    key="sentiment-panel"
-                    layout
-                    layoutId="insight-panel"
-                    initial={isDesktop ? { opacity: 0, x: 40, filter: "blur(8px)" } : { opacity: 0, y: 16, filter: "blur(6px)" }}
-                    animate={{ opacity: 1, x: 0, y: 0, filter: "blur(0px)", scale: [0.99, 1.01, 1] }}
-                    exit={isDesktop ? { opacity: 0, x: 24 } : { opacity: 0, y: 10 }}
-                    transition={{ duration: 0.5, delay: 0.15, ease: "easeInOut", times: [0, 0.75, 1] }}
-                    className="rounded-2xl shadow-sm ring-1 ring-zinc-100"
-                  >
-                    <SentimentCard insights={insights} />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
+          {/* Single-column: movie loaded but no insights yet */}
+          {!loading && movieData && !insights && (
+            <MovieCard movie={movieData.movie} reviewCount={movieData.reviews.length} />
           )}
 
-          {movieData && insights && movieData.reviews.length > 0 && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.4, delay: 0.2 }}
-                className="flex items-center gap-4"
-              >
-                <div className="h-px flex-1 bg-zinc-100" />
-                <span className="text-[10px] font-semibold uppercase tracking-widest text-zinc-300">
-                  Audience Reviews
-                </span>
-                <div className="h-px flex-1 bg-zinc-100" />
-              </motion.div>
+          {/* Two-column split: movie + sentiment left, reviews right */}
+          {movieData && insights && (
+            <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+              {/* Left panel — movie details + AI sentiment */}
+              <div ref={leftPanelRef} className="space-y-4 lg:sticky lg:top-[80px]">
+                <MovieCard movie={movieData.movie} reviewCount={movieData.reviews.length} />
+                <SentimentCard insights={insights} />
+              </div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-              >
-                <ReviewsList reviews={movieData.reviews} />
-              </motion.div>
-            </>
+              {/* Right panel — audience reviews */}
+              {movieData.reviews.length > 0 && (
+                <div ref={rightPanelRef}>
+                  <ReviewsList reviews={movieData.reviews} />
+                </div>
+              )}
+            </div>
           )}
         </motion.div>
 
