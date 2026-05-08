@@ -1,32 +1,22 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { motion } from "framer-motion";
 import gsap from "gsap";
-import SearchBar from "@/components/SearchBar";
-import MovieCard from "@/components/MovieCard";
-import SentimentCard from "@/components/SentimentCard";
-import Loader from "@/components/Loader";
-import ReviewsList from "@/components/ReviewsList";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+import NavBar from "@/components/pop/NavBar";
+import HeroSection, { type HeroSectionHandle } from "@/components/pop/HeroSection";
+import MarqueeStrip from "@/components/pop/MarqueeStrip";
+import TrendingGrid from "@/components/pop/TrendingGrid";
+import DetailSection from "@/components/pop/DetailSection";
+import BreakdownSection from "@/components/pop/BreakdownSection";
+import FilmstripSection from "@/components/pop/FilmstripSection";
+import CommentsSection from "@/components/pop/CommentsSection";
+import FooterSection from "@/components/pop/FooterSection";
+import PopcornRain from "@/components/pop/PopcornRain";
+
 import type { MovieResponse } from "@/types/movie";
 import type { AnalyzeResponse } from "@/types/ai";
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.08, delayChildren: 0.05 },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: "easeOut" as const },
-  },
-};
 
 export default function Home() {
   const [imdbID, setImdbID] = useState("");
@@ -36,30 +26,12 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
 
-  const leftPanelRef = useRef<HTMLDivElement>(null);
-  const rightPanelRef = useRef<HTMLDivElement>(null);
+  const heroRef = useRef<HeroSectionHandle>(null);
 
-  // Panel-level GSAP: left slides from left, right rises from right
+  // Register ScrollTrigger globally once
   useEffect(() => {
-    if (!insights || !leftPanelRef.current || !rightPanelRef.current) return;
-
-    const ctx = gsap.context(() => {
-      gsap.timeline()
-        .fromTo(
-          leftPanelRef.current,
-          { x: -80, opacity: 0 },
-          { x: 0, opacity: 1, duration: 0.72, ease: "power3.out" }
-        )
-        .fromTo(
-          rightPanelRef.current,
-          { x: 80, y: 40, opacity: 0 },
-          { x: 0, y: 0, opacity: 1, duration: 0.72, ease: "power3.out" },
-          "<0.1"
-        );
-    });
-
-    return () => ctx.revert();
-  }, [insights]);
+    gsap.registerPlugin(ScrollTrigger);
+  }, []);
 
   const handleAnalyze = async () => {
     const normalizedId = imdbID.trim();
@@ -80,6 +52,11 @@ export default function Home() {
 
       if (!movieRes.ok) throw new Error(movieJson.error ?? "Failed to fetch movie details.");
       setMovieData(movieJson);
+
+      // Scroll to detail section after movie loads
+      setTimeout(() => {
+        document.getElementById("detail")?.scrollIntoView({ behavior: "smooth" });
+      }, 300);
 
       if (!movieJson.reviews || movieJson.reviews.length === 0) {
         setInfoMessage("Insufficient audience reviews for AI sentiment analysis.");
@@ -102,108 +79,61 @@ export default function Home() {
     }
   };
 
+  const marqueeTitle = movieData?.movie.title ?? "NEON HEARTS";
+  const marqueeScore = insights
+    ? (insights.sentimentScore + 1) / 2
+    : 0.92;
+
   return (
     <>
-      {/* Fixed header */}
-      <header className="fixed left-0 right-0 top-0 z-50 flex h-14 items-center border-b border-zinc-100 bg-white/80 px-6 backdrop-blur-md">
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between">
-          <span className="text-sm font-semibold tracking-tight text-zinc-900">AI Movie Insights</span>
-          <a
-            href="https://github.com/vedaangsharma"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-zinc-400 transition-colors hover:text-zinc-700"
-            aria-label="GitHub"
+      <PopcornRain enabled />
+
+      <NavBar onSearchClick={() => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        setTimeout(() => heroRef.current?.focusSearch(), 600);
+      }} />
+
+      <HeroSection
+        ref={heroRef}
+        imdbID={imdbID}
+        onChange={setImdbID}
+        onSubmit={handleAnalyze}
+        loading={loading}
+      />
+
+      <MarqueeStrip movieTitle={marqueeTitle} score={marqueeScore} />
+
+      {/* Error / info banners */}
+      {(error || infoMessage) && (
+        <div style={{ padding: "24px 36px", background: "var(--cream)" }}>
+          <div
+            className={`pop-error ${error ? "is-error" : "is-info"}`}
+            style={{ maxWidth: 680, margin: "0 auto" }}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+            <svg style={{ marginTop: 2, flexShrink: 0 }} width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
+              <path d="M8 5v3.5M8 11h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
-          </a>
-        </div>
-      </header>
-
-      <main className="min-h-screen">
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="show"
-          className="mx-auto max-w-6xl space-y-6 px-6 pb-20 pt-32"
-        >
-          {/* Hero */}
-          <motion.section variants={itemVariants} className="space-y-5 pb-2 text-center">
-            <div className="space-y-2">
-              <h1 className="bg-gradient-to-b from-zinc-900 to-zinc-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent">
-                AI Movie Insights
-              </h1>
-              <p className="mx-auto max-w-sm text-sm text-zinc-400">
-                Enter an IMDb ID to get metadata, audience reviews, and AI sentiment analysis.
-              </p>
-            </div>
-            <SearchBar imdbID={imdbID} onChange={setImdbID} onSubmit={handleAnalyze} loading={loading} />
-          </motion.section>
-
-          {loading && <Loader />}
-
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
-              className="flex items-start gap-3 rounded-xl border border-rose-100 bg-white px-5 py-4 text-sm text-rose-600 shadow-sm"
-            >
-              <svg className="mt-0.5 shrink-0" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
-                <path d="M8 5v3.5M8 11h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-              {error}
-            </motion.div>
-          )}
-
-          {infoMessage && !error && (
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
-              className="flex items-start gap-3 rounded-xl border border-zinc-200 bg-white px-5 py-4 text-sm text-zinc-500 shadow-sm"
-            >
-              <svg className="mt-0.5 shrink-0 text-zinc-400" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
-                <path d="M8 7.5V11M8 5h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-              {infoMessage}
-            </motion.div>
-          )}
-
-          {/* Single-column: movie loaded but no insights yet */}
-          {!loading && movieData && !insights && (
-            <MovieCard movie={movieData.movie} reviewCount={movieData.reviews.length} />
-          )}
-
-          {/* Two-column split: movie + sentiment left, reviews right */}
-          {movieData && insights && (
-            <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
-              {/* Left panel — movie details + AI sentiment */}
-              <div ref={leftPanelRef} className="space-y-4 lg:sticky lg:top-[80px]">
-                <MovieCard movie={movieData.movie} reviewCount={movieData.reviews.length} />
-                <SentimentCard insights={insights} />
-              </div>
-
-              {/* Right panel — audience reviews */}
-              {movieData.reviews.length > 0 && (
-                <div ref={rightPanelRef}>
-                  <ReviewsList reviews={movieData.reviews} />
-                </div>
-              )}
-            </div>
-          )}
-        </motion.div>
-
-        <footer className="border-t border-zinc-100 bg-white/60">
-          <div className="mx-auto max-w-6xl px-6 py-8 text-center text-xs text-zinc-400">
-            Powered by OpenRouter · OMDb · TMDb
+            <span>{error ?? infoMessage}</span>
           </div>
-        </footer>
-      </main>
+        </div>
+      )}
+
+      <TrendingGrid />
+
+      <DetailSection
+        movie={movieData?.movie}
+        insights={insights}
+        loading={loading}
+      />
+
+      <BreakdownSection insights={insights} />
+
+      <FilmstripSection />
+
+      <CommentsSection reviews={movieData?.reviews} />
+
+      <FooterSection />
     </>
   );
 }
