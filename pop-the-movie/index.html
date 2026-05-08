@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POP — find your next favorite movie</title>
+<link rel="icon" type="image/png" href="assets/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=JetBrains+Mono:wght@500;600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+</head>
+<body>
+
+<!-- Curtains for opening reveal -->
+<div class="curtain left" id="curtainL"></div>
+<div class="curtain right" id="curtainR"></div>
+
+<!-- Popcorn rain canvas -->
+<div id="popcorn-rain"></div>
+
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <div class="nav-brand">
+    <img src="assets/logo.png" alt="POP">
+    <span class="nav-brand-text">POP</span>
+  </div>
+  <div class="nav-links">
+    <a href="#trending">Trending</a>
+    <a href="#detail">Spotlight</a>
+    <a href="#filmstrip">Now Showing</a>
+    <a href="#comments">Reviews</a>
+    <button class="nav-cta" onclick="document.querySelector('.search-box input').focus()">Search 🔍</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" data-screen-label="01 Hero">
+  <div class="hero-inner">
+    <span class="hero-eyebrow mono">★ NOW SHOWING — 12,847 MOVIES ★</span>
+    <h1 class="display" id="heroTitle">
+      <span class="reveal-word">Find</span>
+      <span class="reveal-word">your</span><br>
+      <span class="reveal-word pink">favorite</span>
+      <span class="reveal-word">movie.</span>
+    </h1>
+    <p class="hero-tagline" id="heroTag">Honest scores, real viewer voices, and a buttered bucket of recommendations. No algorithm slop.</p>
+    
+    <div class="search-wrap">
+      <form class="search-box" onsubmit="event.preventDefault(); window.popSearch();">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1A2E" stroke-width="3" stroke-linecap="round">
+          <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/>
+        </svg>
+        <input type="text" id="searchInput" placeholder="Try a title, director, or vibe…" autocomplete="off">
+        <button type="submit" class="search-btn">
+          Pop it
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </form>
+      <div class="search-suggestions">
+        <span class="mono" style="font-size: 12px; align-self: center; opacity: 0.6;">TRY:</span>
+        <button class="chip" onclick="setSearch('Neon Hearts')">Neon Hearts</button>
+        <button class="chip" onclick="setSearch('A24 horror')">A24 horror</button>
+        <button class="chip" onclick="setSearch('crying movies')">crying movies</button>
+        <button class="chip" onclick="setSearch('1990s rom-com')">1990s rom-com</button>
+        <button class="chip" onclick="setSearch('Tanaka')">Tanaka</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Floating snacks -->
+  <svg class="float-snack" data-snack="1" style="top: 15%; left: 8%;" width="80" height="80" viewBox="0 0 80 80">
+    <ellipse cx="40" cy="60" rx="22" ry="6" fill="#1A1A2E" opacity="0.15"/>
+    <path d="M22 30 L26 65 Q26 70 32 70 L48 70 Q54 70 54 65 L58 30 Z" fill="#FF3D7F" stroke="#1A1A2E" stroke-width="3"/>
+    <path d="M28 30 L31 65 M40 30 L40 65 M52 30 L49 65" stroke="#FFF" stroke-width="3"/>
+    <ellipse cx="40" cy="28" rx="22" ry="10" fill="#FFF8E7" stroke="#1A1A2E" stroke-width="3"/>
+    <circle cx="32" cy="22" r="5" fill="#FFF8E7" stroke="#1A1A2E" stroke-width="2"/>
+    <circle cx="42" cy="18" r="6" fill="#FFF8E7" stroke="#1A1A2E" stroke-width="2"/>
+    <circle cx="50" cy="24" r="4" fill="#FFF8E7" stroke="#1A1A2E" stroke-width="2"/>
+  </svg>
+  
+  <svg class="float-snack" data-snack="2" style="top: 20%; right: 10%;" width="70" height="90" viewBox="0 0 70 90">
+    <path d="M16 20 L20 80 Q20 85 25 85 L45 85 Q50 85 50 80 L54 20 Z" fill="#E11D69" stroke="#1A1A2E" stroke-width="3"/>
+    <rect x="16" y="20" width="38" height="10" fill="#FFF" stroke="#1A1A2E" stroke-width="3"/>
+    <ellipse cx="35" cy="20" rx="19" ry="4" fill="#FFD23F" stroke="#1A1A2E" stroke-width="3"/>
+    <rect x="32" y="6" width="6" height="16" fill="#FFF" stroke="#1A1A2E" stroke-width="2"/>
+    <ellipse cx="35" cy="6" rx="4" ry="2" fill="#FFF" stroke="#1A1A2E" stroke-width="2"/>
+  </svg>
+  
+  <svg class="float-snack" data-snack="3" style="bottom: 12%; left: 12%;" width="80" height="50" viewBox="0 0 80 50">
+    <rect x="6" y="10" width="68" height="32" rx="4" fill="#FFD23F" stroke="#1A1A2E" stroke-width="3"/>
+    <rect x="14" y="16" width="52" height="20" fill="#FFF" stroke="#1A1A2E" stroke-width="2"/>
+    <text x="40" y="30" text-anchor="middle" font-family="Bagel Fat One" font-size="12" fill="#FF3D7F">ADMIT 1</text>
+    <circle cx="14" cy="26" r="2" fill="#1A1A2E"/>
+    <circle cx="66" cy="26" r="2" fill="#1A1A2E"/>
+  </svg>
+  
+  <svg class="float-snack" data-snack="4" style="bottom: 18%; right: 14%;" width="60" height="60" viewBox="0 0 60 60">
+    <circle cx="30" cy="30" r="22" fill="#8B4513" stroke="#1A1A2E" stroke-width="3"/>
+    <circle cx="30" cy="30" r="14" fill="#D2691E" stroke="#1A1A2E" stroke-width="2"/>
+    <circle cx="30" cy="30" r="6" fill="#1A1A2E"/>
+  </svg>
+</section>
+
+<!-- MARQUEE STRIP -->
+<div class="marquee">
+  <div class="marquee-track">
+    <span>NOW SHOWING <i class="dot"></i> NEON HEARTS <i class="dot"></i> 0.92 / 1.00 <i class="dot"></i> CRITICS' PICK <i class="dot"></i> EXTRA BUTTER <i class="dot"></i> NOW SHOWING <i class="dot"></i> NEON HEARTS <i class="dot"></i> 0.92 / 1.00 <i class="dot"></i> CRITICS' PICK <i class="dot"></i> EXTRA BUTTER <i class="dot"></i></span>
+    <span>NOW SHOWING <i class="dot"></i> NEON HEARTS <i class="dot"></i> 0.92 / 1.00 <i class="dot"></i> CRITICS' PICK <i class="dot"></i> EXTRA BUTTER <i class="dot"></i> NOW SHOWING <i class="dot"></i> NEON HEARTS <i class="dot"></i> 0.92 / 1.00 <i class="dot"></i> CRITICS' PICK <i class="dot"></i> EXTRA BUTTER <i class="dot"></i></span>
+  </div>
+</div>
+
+<!-- TRENDING GRID -->
+<section class="trending" id="trending" data-screen-label="02 Trending">
+  <div class="container">
+    <span class="section-label mono">// TRENDING THIS WEEK</span>
+    <h2 class="section-title split-text">Buttery <span class="accent">bangers</span><br>everyone's watching.</h2>
+    <p class="section-sub">Eight movies pulling the highest scores from real viewers right now. Hover to peek, click to dive in.</p>
+    <div class="poster-grid" id="posterGrid"></div>
+  </div>
+</section>
+
+<!-- DETAIL -->
+<section class="detail" id="detail" data-screen-label="03 Detail">
+  <div class="container">
+    <span class="section-label mono">// SPOTLIGHT</span>
+    <h2 class="section-title split-text" style="color: var(--white);">Today's pick of<br>the popcorn.</h2>
+    <p class="section-sub" style="color: rgba(255,255,255,0.85);">A deep dive on what we're handing the gold bucket to this week.</p>
+    
+    <div class="detail-grid">
+      <div class="detail-poster">
+        <div class="detail-poster-text">NEON<br>HEARTS</div>
+      </div>
+      
+      <div class="detail-info">
+        <h2 id="detailTitle">Neon Hearts</h2>
+        <div class="detail-meta">
+          <span class="pill">2025</span>
+          <span class="pill">PG-13</span>
+          <span class="pill">2h 14m</span>
+          <span class="pill">Sci-Fi</span>
+          <span class="pill">Romance</span>
+          <span class="pill">DIR. M. TANAKA</span>
+        </div>
+        <p class="detail-synopsis" id="detailSynopsis"></p>
+        <h4 style="font-family: 'Bagel Fat One', sans-serif; font-size: 24px; color: var(--white); margin-bottom: 16px;">The Cast</h4>
+        <div class="cast-list" id="castList"></div>
+      </div>
+      
+      <div class="score-card score-display" id="scoreDisplay" data-style="bucket">
+        <div class="score-label">VIEWER SCORE</div>
+        <div class="bucket">
+          <svg class="bucket-svg" viewBox="0 0 200 220">
+            <defs>
+              <clipPath id="bucketClip">
+                <path d="M40 70 L52 200 Q52 210 62 210 L138 210 Q148 210 148 200 L160 70 Z"/>
+              </clipPath>
+            </defs>
+            <!-- Bucket back stripes -->
+            <path d="M40 70 L52 200 Q52 210 62 210 L138 210 Q148 210 148 200 L160 70 Z" fill="#FFF"/>
+            <g clip-path="url(#bucketClip)">
+              <rect x="40" y="70" width="20" height="140" fill="#FF3D7F"/>
+              <rect x="80" y="70" width="20" height="140" fill="#FF3D7F"/>
+              <rect x="120" y="70" width="20" height="140" fill="#FF3D7F"/>
+              <rect x="160" y="70" width="20" height="140" fill="#FF3D7F"/>
+              <!-- Fill mask -->
+              <rect id="bucketFillRect" x="40" y="210" width="120" height="0" fill="rgba(255, 210, 63, 0.35)"/>
+            </g>
+            <path d="M40 70 L52 200 Q52 210 62 210 L138 210 Q148 210 148 200 L160 70 Z" fill="none" stroke="#1A1A2E" stroke-width="4"/>
+            
+            <!-- Popcorn pile inside -->
+            <g id="kernelPile"></g>
+          </svg>
+        </div>
+        <div class="score-num"><span id="scoreNumeric">0.00</span><span class="denom">/1.00</span></div>
+        <div class="score-tagline">★ EXTRA BUTTER WORTHY ★</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BREAKDOWN -->
+<section class="breakdown" id="breakdown" data-screen-label="04 Breakdown">
+  <div class="container">
+    <span class="section-label mono">// SCORE BREAKDOWN</span>
+    <h2 class="section-title split-text">What makes it <span class="accent">pop</span>.</h2>
+    <p class="section-sub">We don't roll up to a single number. Here's the full receipt — out of 10, by category.</p>
+    <div class="breakdown-grid" id="breakdownGrid"></div>
+  </div>
+</section>
+
+<!-- FILMSTRIP -->
+<section class="filmstrip-section" id="filmstrip" data-screen-label="05 Filmstrip">
+  <div class="container">
+    <span class="section-label mono" style="background: var(--yellow); color: var(--ink);">// NOW SHOWING</span>
+    <h2 class="section-title split-text">Eight reels of<br><span class="accent">pure bliss</span>.</h2>
+    <p class="section-sub">Scroll through this week's lineup — pinned for you, just like the marquee outside.</p>
+  </div>
+  <div class="filmstrip">
+    <div class="filmstrip-track" id="filmstripTrack"></div>
+  </div>
+</section>
+
+<!-- COMMENTS -->
+<section class="comments" id="comments" data-screen-label="06 Comments">
+  <div class="container">
+    <span class="section-label mono">// FROM THE BACK ROW</span>
+    <h2 class="section-title split-text">What viewers are <span class="accent">whispering</span>.</h2>
+    <p class="section-sub">Real reviews from real people who actually saw the movie. No bots. No paid takes.</p>
+    <div class="comment-grid" id="commentGrid"></div>
+  </div>
+</section>
+
+<!-- FOOTER / SNACK BAR -->
+<footer class="footer" data-screen-label="07 Footer">
+  <div class="container" style="text-align: center; padding-top: 40px;">
+    <span class="section-label mono" style="background: var(--yellow); color: var(--ink);">// SNACK BAR</span>
+    <h2 class="section-title" style="color: var(--cream);">Grab a <span style="color: var(--pink);">treat</span> on the way out.</h2>
+  </div>
+  <div class="snack-bar" id="snackBar"></div>
+  
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand">
+        <img src="assets/logo.png" alt="POP">
+        <span class="footer-brand-name">POP</span>
+      </div>
+      <p class="footer-tag">Made by people who love movies — for people who love movies. No algorithms, no auto-play, no compromises.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Discover</h4>
+      <a href="#">Trending</a>
+      <a href="#">New releases</a>
+      <a href="#">Hidden gems</a>
+      <a href="#">Top of all time</a>
+      <a href="#">By director</a>
+    </div>
+    <div class="footer-col">
+      <h4>Community</h4>
+      <a href="#">Write a review</a>
+      <a href="#">Reviewers</a>
+      <a href="#">Watchlists</a>
+      <a href="#">Movie clubs</a>
+      <a href="#">Forums</a>
+    </div>
+    <div class="footer-col">
+      <h4>The Bucket</h4>
+      <a href="#">About POP</a>
+      <a href="#">How we score</a>
+      <a href="#">Contact</a>
+      <a href="#">Press kit</a>
+      <a href="#">Careers</a>
+    </div>
+  </div>
+  
+  <div class="footer-bottom">
+    <span>© 2026 POP CINEMA CO.</span>
+    <span>BUILT WITH 🍿 IN BROOKLYN</span>
+    <span>v1.0.0 — "EXTRA BUTTER"</span>
+  </div>
+</footer>
+
+<!-- TWEAKS -->
+<button class="tw-fab" id="twFab" title="Tweaks">⚙️</button>
+<div class="tw-panel" id="twPanel">
+  <div class="tw-head">
+    <span>Tweaks</span>
+    <button id="twClose">×</button>
+  </div>
+  <div class="tw-body" id="twBody"></div>
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
