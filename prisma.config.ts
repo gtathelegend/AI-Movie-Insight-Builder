@@ -15,11 +15,4 @@ export default defineConfig({
   datasource: {
     url: process.env.DATABASE_URL!,
   },
-  migrations: {
-    adapter: async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { PrismaPg } = await import(ADAPTER_PKG as any);
-      return new PrismaPg({ connectionString: process.env.DATABASE_URL! });
-    },
-  },
 });

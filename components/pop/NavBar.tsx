@@ -6,9 +6,10 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 type NavBarProps = {
   onSearchClick: () => void;
+  hasMovie?: boolean;
 };
 
-export default function NavBar({ onSearchClick }: NavBarProps) {
+export default function NavBar({ onSearchClick, hasMovie = false }: NavBarProps) {
   const navRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -37,9 +38,9 @@ export default function NavBar({ onSearchClick }: NavBarProps) {
       </div>
       <div className="nav-links">
         <a href="#trending">Trending</a>
-        <a href="#detail">Spotlight</a>
+        {hasMovie && <a href="#detail">Spotlight</a>}
         <a href="#filmstrip">Now Showing</a>
-        <a href="#comments">Reviews</a>
+        {hasMovie && <a href="#comments">Reviews</a>}
         <button className="nav-cta" onClick={onSearchClick}>
           Search 🔍
         </button>

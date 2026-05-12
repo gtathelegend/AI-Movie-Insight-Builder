@@ -221,10 +221,13 @@ export default function Home() {
     <>
       <PopcornRain enabled />
 
-      <NavBar onSearchClick={() => {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-        setTimeout(() => heroRef.current?.focusSearch(), 600);
-      }} />
+      <NavBar
+        hasMovie={!!movieData}
+        onSearchClick={() => {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          setTimeout(() => heroRef.current?.focusSearch(), 600);
+        }}
+      />
 
       <HeroSection
         ref={heroRef}
@@ -263,21 +266,19 @@ export default function Home() {
 
       <TrendingGrid onMovieClick={handleTrendingClick} />
 
-      <DetailSection movie={movieData?.movie} insights={insights} loading={loading} />
-
-      <BreakdownSection insights={insights} />
-
-      <EmotionSection emotions={insights?.emotions} />
-
-      <AudienceVsCriticsSection avc={insights?.audienceVsCritics} />
-
-      <ClusterSection clusters={insights?.clusters} />
-
-      <CharacterSection characters={insights?.characters} />
+      {movieData && (
+        <>
+          <DetailSection movie={movieData.movie} insights={insights} loading={loading} />
+          <BreakdownSection insights={insights} />
+          <EmotionSection emotions={insights?.emotions} />
+          <AudienceVsCriticsSection avc={insights?.audienceVsCritics} />
+          <ClusterSection clusters={insights?.clusters} />
+          <CharacterSection characters={insights?.characters} />
+          <CommentsSection reviews={movieData.reviews} />
+        </>
+      )}
 
       <FilmstripSection onFrameClick={handleTrendingClick} />
-
-      <CommentsSection reviews={movieData?.reviews} />
 
       <FooterSection />
     </>
