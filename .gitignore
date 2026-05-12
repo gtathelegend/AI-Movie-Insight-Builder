@@ -24,6 +24,10 @@
 .DS_Store
 *.pem
 
+# graphify (generated knowledge-graph artifacts)
+/graphify-out/
+/.graphify*
+
 # debug
 npm-debug.log*
 yarn-debug.log*

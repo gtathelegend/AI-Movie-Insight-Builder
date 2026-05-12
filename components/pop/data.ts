@@ -55,6 +55,36 @@ export const MOCK_COMMENTS = [
   { name: "Alex T.", handle: "@alextoo", initials: "AT", color: "#EF476F", stars: 4, text: "A film about memory, made of memory. Felt like watching someone else's dream and recognizing pieces of my own.", time: "2 weeks ago", likes: 198, replies: 28 },
 ];
 
+export const MOCK_EMOTIONS = {
+  excitement: 78,
+  nostalgia: 52,
+  confusion: 18,
+  fear: 24,
+  sadness: 35,
+  inspiration: 65,
+  satisfaction: 71,
+};
+
+export const MOCK_CHARACTERS = [
+  { name: "Arthur Fleck", sentiment: "positive" as const, mentions: 12 },
+  { name: "Commissioner Gordon", sentiment: "mixed" as const, mentions: 5 },
+  { name: "Alfred", sentiment: "positive" as const, mentions: 4 },
+  { name: "Harvey Dent", sentiment: "negative" as const, mentions: 3 },
+];
+
+export const MOCK_CLUSTERS = [
+  { label: "Phenomenal acting", percentage: 42, representative: "The lead performance is once-in-a-generation. Completely transformative and unforgettable." },
+  { label: "Compelling story", percentage: 31, representative: "The screenplay is tight, emotional, and unpredictable from start to finish." },
+  { label: "Slow pacing concerns", percentage: 15, representative: "Beautiful but the second act drags considerably before the payoff." },
+  { label: "Stunning visuals", percentage: 12, representative: "Every frame is a painting. The cinematography is genuinely breathtaking." },
+];
+
+export const MOCK_AVC = {
+  audienceScore: 87,
+  criticScore: 79,
+  verdict: "Audiences connect more deeply than critics anticipated — particularly praising the emotional performances and immersive world-building that critics undervalued.",
+};
+
 export const SNACKS = [
   { icon: "🍿", name: "Popcorn", price: "$6.50" },
   { icon: "🥤", name: "Cola", price: "$4.00" },

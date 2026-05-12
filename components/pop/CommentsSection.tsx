@@ -97,8 +97,12 @@ export default function CommentsSection({ reviews }: CommentsSectionProps) {
               <div className="comment-foot">
                 <span className="comment-time mono">{c.time}</span>
                 <div className="comment-likes">
-                  <button>♥ {c.likes}</button>
-                  <button>💬 {c.replies}</button>
+                  <button type="button" suppressHydrationWarning>
+                    ♥ {c.likes}
+                  </button>
+                  <button type="button" suppressHydrationWarning>
+                    💬 {c.replies}
+                  </button>
                 </div>
               </div>
             </div>

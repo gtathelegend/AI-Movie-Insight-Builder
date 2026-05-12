@@ -5,124 +5,126 @@ import { extractJsonObject, ApiError } from "@/lib/utils";
 type OpenRouterResponse = {
   choices?: Array<{
     message?: {
-      content?:
-        | string
-        | Array<{
-            type?: string;
-            text?: string;
-          }>;
+      content?: string | Array<{ type?: string; text?: string }>;
     };
   }>;
 };
 
-type OpenRouterMessageContent =
-  | string
-  | Array<{
-      type?: string;
-      text?: string;
-    }>
-  | undefined;
+type AnalysisContext = {
+  movieTitle?: string;
+  movieYear?: string;
+  criticScore?: number;
+};
 
-function getContentAsText(content: OpenRouterMessageContent): string {
-  if (typeof content === "string") {
-    return content;
-  }
-
+function getContentAsText(
+  content: string | Array<{ type?: string; text?: string }> | undefined,
+): string {
+  if (typeof content === "string") return content;
   if (Array.isArray(content)) {
-    const combined = content
-      .map((part) => (typeof part?.text === "string" ? part.text : ""))
+    return content
+      .map((p) => (typeof p?.text === "string" ? p.text : ""))
       .join("\n")
       .trim();
-
-    if (combined) {
-      return combined;
-    }
   }
-
   return "";
 }
 
-export async function analyzeReviewsWithAI(reviews: string[]): Promise<AIInsights> {
-  const apiKey = process.env.OPENROUTER_API_KEY;
+function buildPrompt(reviews: string[], ctx: AnalysisContext): string {
+  const movieLine = ctx.movieTitle
+    ? `Movie: "${ctx.movieTitle}"${ctx.movieYear ? ` (${ctx.movieYear})` : ""}`
+    : "Movie: unknown";
 
-  if (!apiKey) {
-    throw new ApiError("OPENROUTER_API_KEY is missing.", 500);
-  }
+  const criticNote = typeof ctx.criticScore === "number"
+    ? `Critic score (Rotten Tomatoes): ${ctx.criticScore} — use this exact value for audienceVsCritics.criticScore`
+    : `No critic score available — set audienceVsCritics.criticScore to 50`;
 
-  const prompt = `You are analyzing audience movie reviews. Return ONLY strict JSON with this exact shape:
+  return `You are an expert film intelligence analyst. Analyze these ${reviews.length} audience reviews.
+${movieLine}
+${criticNote}
+
+Return ONLY valid JSON matching this exact shape (no markdown, no code fences, no extra text):
+
 {
-  "summary": string,
-  "keyThemes": string[],
-  "pros": string[],
-  "cons": string[],
-  "sentimentScore": number
+  "summary": "3-4 sentences: overall audience reception and defining qualities",
+  "keyThemes": ["3-6 recurring topics from the reviews"],
+  "pros": ["3-6 specific positives audiences praised"],
+  "cons": ["3-6 specific negatives audiences mentioned"],
+  "sentimentScore": 0.0,
+  "emotions": {
+    "excitement": 0,
+    "nostalgia": 0,
+    "confusion": 0,
+    "fear": 0,
+    "sadness": 0,
+    "inspiration": 0,
+    "satisfaction": 0
+  },
+  "characters": [
+    { "name": "Character name (not actor)", "sentiment": "positive", "mentions": 3 }
+  ],
+  "clusters": [
+    { "label": "Short description of what this audience group said", "percentage": 35, "representative": "A short representative quote from a review" }
+  ],
+  "audienceVsCritics": {
+    "audienceScore": 72,
+    "criticScore": 0,
+    "verdict": "1-2 sentences comparing audience and critic reactions"
+  }
 }
-Rules:
-- sentimentScore must be between -1 and 1.
-- Do not include markdown, code fences, or extra text.
-- Summary should be 3-4 lines in plain text.
-- keyThemes should include 3-6 concise recurring topics.
-- pros should include 3-6 positive points from reviews.
-- cons should include 3-6 negative points from reviews.
 
-Reviews:\n${reviews.join("\n---\n")}`;
+Strict rules:
+- sentimentScore: float from -1.0 (very negative) to 1.0 (very positive)
+- All emotion values: integers 0-100 representing what % of reviews convey that feeling
+- characters: 2-5 most mentioned CHARACTERS (not actors) — omit if reviews name none
+- clusters: 3-5 distinct audience opinion groups; percentages must sum to ~100
+- audienceScore: integer 0-100 reflecting overall audience sentiment
+- criticScore: use the provided critic score value exactly as instructed above
+
+Reviews:
+${reviews.join("\n---\n")}`;
+}
+
+export async function analyzeReviewsWithAI(
+  reviews: string[],
+  ctx: AnalysisContext = {},
+): Promise<AIInsights> {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) throw new ApiError("OPENROUTER_API_KEY is missing.", 500);
+
+  const prompt = buildPrompt(reviews, ctx);
 
   try {
-    const modelsToTry = ["openai/gpt-4o-mini"];
-    let lastRequestError: unknown = null;
+    const { data } = await axios.post<OpenRouterResponse>(
+      "https://openrouter.ai/api/v1/chat/completions",
+      {
+        model: "openai/gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }],
+        response_format: { type: "json_object" },
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "HTTP-Referer": process.env.APP_URL ?? "http://localhost:3000",
+          "X-Title": "AI Movie Insight Builder",
+          "Content-Type": "application/json",
+        },
+        timeout: 45000,
+      },
+    );
 
-    for (const model of modelsToTry) {
-      try {
-        const { data } = await axios.post<OpenRouterResponse>(
-          "https://openrouter.ai/api/v1/chat/completions",
-          {
-            model,
-            messages: [
-              {
-                role: "user",
-                content: prompt,
-              },
-            ],
-            response_format: {
-              type: "json_object",
-            },
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${apiKey}`,
-              "HTTP-Referer": process.env.APP_URL ?? "http://localhost:3000",
-              "X-Title": "AI Movie Insight Builder",
-              "Content-Type": "application/json",
-            },
-            timeout: 30000,
-          },
-        );
+    const rawContent = getContentAsText(data.choices?.[0]?.message?.content);
+    if (!rawContent) throw new ApiError("OpenRouter returned an empty response.", 500);
 
-        const rawContent = getContentAsText(data.choices?.[0]?.message?.content);
-
-        if (!rawContent) {
-          throw new ApiError("OpenRouter returned an empty response.", 500);
-        }
-
-        return JSON.parse(extractJsonObject(rawContent)) as AIInsights;
-      } catch (modelError) {
-        lastRequestError = modelError;
-      }
-    }
-
-    throw lastRequestError;
+    return JSON.parse(extractJsonObject(rawContent)) as AIInsights;
   } catch (error) {
-    if (error instanceof ApiError) {
-      throw error;
-    }
+    if (error instanceof ApiError) throw error;
 
     if (axios.isAxiosError(error)) {
-      const apiMessage =
+      const msg =
         typeof error.response?.data === "object" && error.response?.data !== null
           ? JSON.stringify(error.response.data)
           : error.message;
-
-      throw new ApiError(`OpenRouter request failed: ${apiMessage}`, 500);
+      throw new ApiError(`OpenRouter request failed: ${msg}`, 500);
     }
 
     throw new ApiError("Failed to analyze reviews with AI.", 500);

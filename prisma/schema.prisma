@@ -1,0 +1,23 @@
+// Datasource: switch provider to "postgresql" and set DATABASE_URL in .env for production (Supabase)
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Persistent analysis cache — survives server restarts and is shared across instances.
+// The in-memory cache (lib/cache.ts) is the L1 layer; this is L2.
+model CachedAnalysis {
+  id         String   @id @default(cuid())
+  imdbId     String   @unique
+  movieTitle String
+  data       String   // JSON-stringified AnalyzeResponse
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([expiresAt])
+}
