@@ -1,7 +1,8 @@
-// Datasource: switch provider to "postgresql" and set DATABASE_URL in .env for production (Supabase)
+// Prisma 7: connection URL lives in prisma.config.ts (Migrate) and is passed
+// to the PrismaClient constructor via the @prisma/adapter-pg adapter at runtime.
+
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -14,7 +15,7 @@ model CachedAnalysis {
   id         String   @id @default(cuid())
   imdbId     String   @unique
   movieTitle String
-  data       String   // JSON-stringified AnalyzeResponse
+  data       String
   expiresAt  DateTime
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
