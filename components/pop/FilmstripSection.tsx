@@ -20,6 +20,7 @@ type FilmstripFrame = {
 
 export default function FilmstripSection({ onFrameClick }: FilmstripSectionProps = {}) {
   const sectionRef = useRef<HTMLElement>(null);
+  const filmstripRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const [frames, setFrames] = useState<FilmstripFrame[] | null>(null);
 
@@ -58,7 +59,8 @@ export default function FilmstripSection({ onFrameClick }: FilmstripSectionProps
 
     const track = trackRef.current;
     const section = sectionRef.current;
-    if (!track || !section) return;
+    const filmstrip = filmstripRef.current;
+    if (!track || !section || !filmstrip) return;
 
     const ctx = gsap.context(() => {
       ScrollTrigger.create({
@@ -88,7 +90,10 @@ export default function FilmstripSection({ onFrameClick }: FilmstripSectionProps
             trigger: section,
             start: "top top",
             end: () => `+=${distance + 200}`,
-            pin: true,
+            // Pin an inner wrapper instead of the <section> itself.
+            // Pinning the React-managed <section> can cause DOM exceptions when React inserts
+            // new siblings above/below it (e.g. when a trending click loads a movie).
+            pin: filmstrip,
             scrub: 1,
             invalidateOnRefresh: true,
           },
@@ -116,7 +121,7 @@ export default function FilmstripSection({ onFrameClick }: FilmstripSectionProps
             : "Scroll through this week's lineup — pinned for you, just like the marquee outside."}
         </p>
       </div>
-      <div className="filmstrip">
+      <div className="filmstrip" ref={filmstripRef}>
         <div className="filmstrip-track" ref={trackRef}>
           {allFrames.map((f, i) => {
             const c = FILMSTRIP_COLORS[i % FILMSTRIP_COLORS.length];
