@@ -77,10 +77,14 @@ export default function DetailSection({ movie, insights, loading }: DetailSectio
   useEffect(() => {
     if (!movie) return;
     triggered.current = false;
-    gsap.fromTo(".detail-poster", { x: -40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, ease: "power3.out" });
-    gsap.fromTo(".detail-info", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, delay: 0.1, ease: "power3.out" });
-    gsap.fromTo(".score-card", { x: 40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, delay: 0.2, ease: "power3.out" });
-    gsap.fromTo(".cast-card", { y: 20, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.07, delay: 0.4, duration: 0.4 });
+    const ctx = gsap.context(() => {
+      gsap.fromTo(".detail-poster", { x: -40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, ease: "power3.out" });
+      gsap.fromTo(".detail-info", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, delay: 0.1, ease: "power3.out" });
+      gsap.fromTo(".score-card", { x: 40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, delay: 0.2, ease: "power3.out" });
+      gsap.fromTo(".cast-card", { y: 20, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.07, delay: 0.4, duration: 0.4 });
+    }, sectionRef);
+
+    return () => ctx.revert();
   }, [movie]);
 
   return (

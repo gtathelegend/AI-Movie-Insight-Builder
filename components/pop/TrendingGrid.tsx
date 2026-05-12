@@ -90,7 +90,7 @@ export default function TrendingGrid({ onMovieClick }: TrendingGridProps = {}) {
                 className="poster-card"
                 data-card
                 onClick={() => {
-                  if (onMovieClick && m.tmdbId) {
+                  if (onMovieClick && Number.isFinite(m.tmdbId)) {
                     onMovieClick(m.tmdbId, m.title);
                   } else {
                     document.getElementById("detail")?.scrollIntoView({ behavior: "smooth" });

@@ -219,7 +219,7 @@ export default function Home() {
 
   return (
     <>
-      <PopcornRain enabled />
+      <PopcornRain enabled hasMovie={!!movieData} />
 
       <NavBar
         hasMovie={!!movieData}

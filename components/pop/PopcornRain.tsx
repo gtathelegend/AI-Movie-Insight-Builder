@@ -6,9 +6,10 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 type PopcornRainProps = {
   enabled?: boolean;
+  hasMovie?: boolean;
 };
 
-export default function PopcornRain({ enabled = true }: PopcornRainProps) {
+export default function PopcornRain({ enabled = true, hasMovie = false }: PopcornRainProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -57,14 +58,24 @@ export default function PopcornRain({ enabled = true }: PopcornRainProps) {
       if (activeRef.current) spawnKernel();
     }, 280);
 
-    const bursts = ["#detail", "#breakdown", "#comments"].map((sel) =>
-      ScrollTrigger.create({
-        trigger: sel,
-        start: "top 60%",
-        onEnter: () => burst(25),
-        once: true,
+    const burstSelectors = hasMovie ? ["#detail", "#breakdown", "#comments"] : [];
+    const bursts = burstSelectors
+      .map((sel) => {
+        // Avoid creating ScrollTriggers for elements that don't exist yet.
+        if (!document.querySelector(sel)) return null;
+        return ScrollTrigger.create({
+          trigger: sel,
+          start: "top 60%",
+          onEnter: () => burst(25),
+          once: true,
+        });
       })
-    );
+      .filter((t): t is ScrollTrigger => t !== null);
+
+    if (hasMovie && bursts.length) {
+      // New sections just mounted; let ScrollTrigger re-measure now.
+      ScrollTrigger.refresh();
+    }
 
     return () => {
       trendingTrigger.kill();
@@ -72,7 +83,7 @@ export default function PopcornRain({ enabled = true }: PopcornRainProps) {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled]);
+  }, [enabled, hasMovie]);
 
   if (!enabled) return null;
 
