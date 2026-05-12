@@ -12,7 +12,11 @@ const GRADIENT_PAIRS = [
   ["#457B9D", "#A8DADC"], ["#9B5DE5", "#F15BB5"],
 ];
 
-export default function TrendingGrid() {
+type TrendingGridProps = {
+  onMovieClick?: (tmdbId: number, title: string) => void;
+};
+
+export default function TrendingGrid({ onMovieClick }: TrendingGridProps = {}) {
   const sectionRef = useRef<HTMLElement>(null);
   const [movies, setMovies] = useState<TrendingMovie[] | null>(null);
 
@@ -85,7 +89,13 @@ export default function TrendingGrid() {
                 key={m.rank}
                 className="poster-card"
                 data-card
-                onClick={() => document.getElementById("detail")?.scrollIntoView({ behavior: "smooth" })}
+                onClick={() => {
+                  if (onMovieClick && m.tmdbId) {
+                    onMovieClick(m.tmdbId, m.title);
+                  } else {
+                    document.getElementById("detail")?.scrollIntoView({ behavior: "smooth" });
+                  }
+                }}
               >
                 <div
                   className="poster-img"

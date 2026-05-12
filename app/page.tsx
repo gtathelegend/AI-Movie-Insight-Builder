@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -21,8 +21,8 @@ import PopcornRain from "@/components/pop/PopcornRain";
 
 import type { MovieResponse } from "@/types/movie";
 import type { AnalyzeResponse, SSEEvent } from "@/types/ai";
+import type { SearchResult } from "@/app/api/search/route";
 
-// ─── SSE stream reader ────────────────────────────────────────────────────────
 async function streamAnalysis(
   payload: {
     imdbID: string;
@@ -54,7 +54,6 @@ async function streamAnalysis(
 
     buffer += decoder.decode(value, { stream: true });
 
-    // Process complete SSE messages (separated by double newline)
     const messages = buffer.split("\n\n");
     buffer = messages.pop() ?? "";
 
@@ -71,9 +70,21 @@ async function streamAnalysis(
   throw new Error("Analysis stream ended unexpectedly.");
 }
 
-// ─── Page component ───────────────────────────────────────────────────────────
+async function resolveTmdbToImdb(tmdbId: number): Promise<string> {
+  const r = await fetch(`/api/resolve?tmdbId=${tmdbId}`);
+  const data = (await r.json()) as { imdbID?: string; error?: string };
+  if (!r.ok || !data.imdbID) throw new Error(data.error ?? "Could not resolve IMDb ID.");
+  return data.imdbID;
+}
+
+async function searchTitle(query: string): Promise<SearchResult[]> {
+  const r = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+  if (!r.ok) return [];
+  return (await r.json()) as SearchResult[];
+}
+
 export default function Home() {
-  const [imdbID, setImdbID] = useState("");
+  const [query, setQuery] = useState("");
   const [movieData, setMovieData] = useState<MovieResponse | null>(null);
   const [insights, setInsights] = useState<AnalyzeResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -87,24 +98,17 @@ export default function Home() {
     gsap.registerPlugin(ScrollTrigger);
   }, []);
 
-  const handleAnalyze = async () => {
-    const normalizedId = imdbID.trim();
-    if (!/^tt\d{7,8}$/.test(normalizedId)) {
-      setError("IMDb ID must start with 'tt' and include 7 or 8 digits.");
-      return;
-    }
-
+  // Core analysis pipeline given a known IMDb id
+  const runAnalysis = useCallback(async (imdbID: string) => {
     setLoading(true);
     setError(null);
     setInfoMessage(null);
     setMovieData(null);
     setInsights(null);
-    setAnalysisStep(null);
+    setAnalysisStep("Fetching movie details...");
 
     try {
-      // ── Fetch movie metadata + reviews ────────────────────────────────
-      setAnalysisStep("Fetching movie details...");
-      const movieRes = await fetch(`/api/movie?imdbID=${encodeURIComponent(normalizedId)}`);
+      const movieRes = await fetch(`/api/movie?imdbID=${encodeURIComponent(imdbID)}`);
       const movieJson = (await movieRes.json()) as MovieResponse & { error?: string };
       if (!movieRes.ok) throw new Error(movieJson.error ?? "Failed to fetch movie details.");
       setMovieData(movieJson);
@@ -119,10 +123,9 @@ export default function Home() {
         return;
       }
 
-      // ── Stream AI analysis via SSE ────────────────────────────────────
       const result = await streamAnalysis(
         {
-          imdbID: normalizedId,
+          imdbID,
           reviews: movieJson.reviews.slice(0, 10),
           movieTitle: movieJson.movie.title,
           movieYear: movieJson.movie.year,
@@ -133,7 +136,6 @@ export default function Home() {
 
       setInsights(result);
 
-      // Scroll to intelligence sections after a beat
       setTimeout(() => {
         document.getElementById("emotions")?.scrollIntoView({ behavior: "smooth" });
       }, 600);
@@ -143,9 +145,76 @@ export default function Home() {
       setLoading(false);
       setAnalysisStep(null);
     }
+  }, []);
+
+  // Called by HeroSection button: query may be either an IMDb ID or a title
+  const handleAnalyze = async () => {
+    const trimmed = query.trim();
+    if (!trimmed) {
+      setError("Type a movie title or IMDb ID to begin.");
+      return;
+    }
+
+    // Direct IMDb-ID path
+    if (/^tt\d{6,8}$/i.test(trimmed)) {
+      await runAnalysis(trimmed.toLowerCase());
+      return;
+    }
+
+    // Title path: pick the top search match and resolve to IMDb
+    setLoading(true);
+    setError(null);
+    setAnalysisStep("Looking up movie...");
+    try {
+      const results = await searchTitle(trimmed);
+      if (results.length === 0) {
+        setError(`No movies matched "${trimmed}". Try a different title.`);
+        setLoading(false);
+        setAnalysisStep(null);
+        return;
+      }
+      const imdbID = await resolveTmdbToImdb(results[0].tmdbId);
+      setQuery(results[0].title);
+      await runAnalysis(imdbID);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Search failed.");
+      setLoading(false);
+      setAnalysisStep(null);
+    }
   };
 
-  const marqueeTitle = movieData?.movie.title ?? "NEON HEARTS";
+  // Called by HeroSection autocomplete pick
+  const handlePickResult = async (r: SearchResult) => {
+    setLoading(true);
+    setError(null);
+    setAnalysisStep("Looking up movie...");
+    try {
+      const imdbID = await resolveTmdbToImdb(r.tmdbId);
+      await runAnalysis(imdbID);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not load that movie.");
+      setLoading(false);
+      setAnalysisStep(null);
+    }
+  };
+
+  // Called by TrendingGrid card click — same flow as autocomplete pick
+  const handleTrendingClick = async (tmdbId: number, title: string) => {
+    setQuery(title);
+    setLoading(true);
+    setError(null);
+    setAnalysisStep("Looking up movie...");
+    try {
+      const imdbID = await resolveTmdbToImdb(tmdbId);
+      await runAnalysis(imdbID);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not load that movie.");
+      setLoading(false);
+      setAnalysisStep(null);
+    }
+  };
+
+  const marqueeTitle = movieData?.movie.title ?? "POP CINEMA";
   const marqueeScore = insights ? (insights.sentimentScore + 1) / 2 : 0.92;
 
   return (
@@ -159,15 +228,15 @@ export default function Home() {
 
       <HeroSection
         ref={heroRef}
-        imdbID={imdbID}
-        onChange={setImdbID}
+        query={query}
+        onChange={setQuery}
         onSubmit={handleAnalyze}
+        onPickResult={handlePickResult}
         loading={loading}
       />
 
       <MarqueeStrip movieTitle={marqueeTitle} score={marqueeScore} />
 
-      {/* ── Analysis progress indicator ────────────────────────────────── */}
       {analysisStep && (
         <div style={{ padding: "28px 36px", background: "var(--cream)", display: "flex", justifyContent: "center" }}>
           <div className="analysis-progress">
@@ -177,7 +246,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* ── Error / info banners ───────────────────────────────────────── */}
       {(error || infoMessage) && !analysisStep && (
         <div style={{ padding: "24px 36px", background: "var(--cream)" }}>
           <div
@@ -193,13 +261,12 @@ export default function Home() {
         </div>
       )}
 
-      <TrendingGrid />
+      <TrendingGrid onMovieClick={handleTrendingClick} />
 
       <DetailSection movie={movieData?.movie} insights={insights} loading={loading} />
 
       <BreakdownSection insights={insights} />
 
-      {/* ── Intelligence sections (live data when insights available) ─── */}
       <EmotionSection emotions={insights?.emotions} />
 
       <AudienceVsCriticsSection avc={insights?.audienceVsCritics} />
@@ -208,7 +275,7 @@ export default function Home() {
 
       <CharacterSection characters={insights?.characters} />
 
-      <FilmstripSection />
+      <FilmstripSection onFrameClick={handleTrendingClick} />
 
       <CommentsSection reviews={movieData?.reviews} />
 

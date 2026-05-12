@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect, useRef, forwardRef, useImperativeHandle } from "react";
+import { useEffect, useRef, forwardRef, useImperativeHandle, useState } from "react";
 import gsap from "gsap";
 import { SEARCH_SUGGESTIONS } from "./data";
+import type { SearchResult } from "@/app/api/search/route";
 
 type HeroSectionProps = {
-  imdbID: string;
+  query: string;
   onChange: (v: string) => void;
   onSubmit: () => void;
+  onPickResult: (result: SearchResult) => void;
   loading: boolean;
 };
 
@@ -16,12 +18,18 @@ export type HeroSectionHandle = {
 };
 
 const HeroSection = forwardRef<HeroSectionHandle, HeroSectionProps>(
-  ({ imdbID, onChange, onSubmit, loading }, ref) => {
+  ({ query, onChange, onSubmit, onPickResult, loading }, ref) => {
     const inputRef = useRef<HTMLInputElement>(null);
     const curtainLRef = useRef<HTMLDivElement>(null);
     const curtainRRef = useRef<HTMLDivElement>(null);
     const heroRef = useRef<HTMLElement>(null);
+    const wrapRef = useRef<HTMLDivElement>(null);
     const curtainRemovedRef = useRef(false);
+
+    const [results, setResults] = useState<SearchResult[]>([]);
+    const [showDropdown, setShowDropdown] = useState(false);
+    const [searching, setSearching] = useState(false);
+    const [activeIndex, setActiveIndex] = useState(-1);
 
     useImperativeHandle(ref, () => ({
       focusSearch: () => inputRef.current?.focus(),
@@ -42,7 +50,6 @@ const HeroSection = forwardRef<HeroSectionHandle, HeroSectionProps>(
           curtainRRef.current?.remove();
         }, ">-0.3");
 
-      // Hero text reveal
       gsap.set(".reveal-word", { y: 80, opacity: 0 });
       tl.to(".reveal-word", {
         y: 0,
@@ -64,7 +71,6 @@ const HeroSection = forwardRef<HeroSectionHandle, HeroSectionProps>(
           ease: "back.out(1.7)",
         }, "<-0.4");
 
-      // Floating loop
       document.querySelectorAll<SVGElement>(".float-snack").forEach((el, i) => {
         gsap.to(el, {
           y: "random(-15, 15)",
@@ -79,13 +85,97 @@ const HeroSection = forwardRef<HeroSectionHandle, HeroSectionProps>(
       });
     }, []);
 
+    // ── Debounced live-search ─────────────────────────────────────────────
+    useEffect(() => {
+      const trimmed = query.trim();
+
+      // If the query already looks like an IMDb ID, no need for autocomplete
+      if (/^tt\d{6,8}$/i.test(trimmed)) {
+        setResults([]);
+        setShowDropdown(false);
+        return;
+      }
+
+      if (trimmed.length < 3) {
+        setResults([]);
+        setShowDropdown(false);
+        setSearching(false);
+        return;
+      }
+
+      let cancelled = false;
+      setSearching(true);
+
+      const handle = setTimeout(async () => {
+        try {
+          const r = await fetch(`/api/search?q=${encodeURIComponent(trimmed)}`);
+          if (!r.ok) throw new Error("search failed");
+          const data = (await r.json()) as SearchResult[];
+          if (cancelled) return;
+          setResults(data);
+          setShowDropdown(true);
+          setActiveIndex(-1);
+        } catch {
+          if (!cancelled) {
+            setResults([]);
+            setShowDropdown(true);
+          }
+        } finally {
+          if (!cancelled) setSearching(false);
+        }
+      }, 280);
+
+      return () => {
+        cancelled = true;
+        clearTimeout(handle);
+      };
+    }, [query]);
+
+    // ── Close on outside click ────────────────────────────────────────────
+    useEffect(() => {
+      const onClick = (e: MouseEvent) => {
+        if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+          setShowDropdown(false);
+        }
+      };
+      document.addEventListener("mousedown", onClick);
+      return () => document.removeEventListener("mousedown", onClick);
+    }, []);
+
     const handleKey = (e: React.KeyboardEvent) => {
+      if (showDropdown && results.length > 0) {
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          setActiveIndex((i) => Math.min(i + 1, results.length - 1));
+          return;
+        }
+        if (e.key === "ArrowUp") {
+          e.preventDefault();
+          setActiveIndex((i) => Math.max(i - 1, -1));
+          return;
+        }
+        if (e.key === "Enter" && activeIndex >= 0) {
+          e.preventDefault();
+          handlePick(results[activeIndex]);
+          return;
+        }
+        if (e.key === "Escape") {
+          setShowDropdown(false);
+          return;
+        }
+      }
       if (e.key === "Enter") onSubmit();
+    };
+
+    const handlePick = (r: SearchResult) => {
+      setShowDropdown(false);
+      setResults([]);
+      onChange(r.title);
+      onPickResult(r);
     };
 
     return (
       <>
-        {/* Curtains — absolutely positioned siblings rendered before hero */}
         <div className="curtain left" ref={curtainLRef} />
         <div className="curtain right" ref={curtainRRef} />
 
@@ -103,7 +193,7 @@ const HeroSection = forwardRef<HeroSectionHandle, HeroSectionProps>(
               Honest scores, real viewer voices, and a buttered bucket of recommendations. No algorithm slop.
             </p>
 
-            <div className="search-wrap">
+            <div className="search-wrap" ref={wrapRef}>
               <div className="search-box">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1A2E" strokeWidth="3" strokeLinecap="round">
                   <circle cx="11" cy="11" r="7" />
@@ -112,10 +202,13 @@ const HeroSection = forwardRef<HeroSectionHandle, HeroSectionProps>(
                 <input
                   ref={inputRef}
                   type="text"
-                  value={imdbID}
+                  value={query}
                   onChange={(e) => onChange(e.target.value)}
                   onKeyDown={handleKey}
-                  placeholder="Enter an IMDb ID (e.g. tt0133093)…"
+                  onFocus={() => {
+                    if (results.length > 0) setShowDropdown(true);
+                  }}
+                  placeholder="Search by movie title or IMDb ID…"
                   autoComplete="off"
                   suppressHydrationWarning
                 />
@@ -138,13 +231,49 @@ const HeroSection = forwardRef<HeroSectionHandle, HeroSectionProps>(
                 </button>
               </div>
 
+              {showDropdown && (
+                <div className="search-dropdown">
+                  {searching && results.length === 0 && (
+                    <div className="search-dropdown-loading">Searching…</div>
+                  )}
+                  {!searching && results.length === 0 && (
+                    <div className="search-dropdown-empty">
+                      No matches for &ldquo;{query.trim()}&rdquo;
+                    </div>
+                  )}
+                  {results.map((r, i) => (
+                    <button
+                      key={r.tmdbId}
+                      type="button"
+                      className={`search-dropdown-item ${i === activeIndex ? "active" : ""}`}
+                      onMouseEnter={() => setActiveIndex(i)}
+                      onClick={() => handlePick(r)}
+                    >
+                      <div
+                        className="search-dropdown-poster"
+                        style={r.poster ? { backgroundImage: `url(${r.poster})` } : undefined}
+                      />
+                      <div className="search-dropdown-info">
+                        <div className="search-dropdown-title">{r.title}</div>
+                        <div className="search-dropdown-meta">
+                          {r.year || "—"} · TMDb #{r.tmdbId}
+                        </div>
+                      </div>
+                      {r.score > 0 && (
+                        <span className="search-dropdown-score">{r.score.toFixed(2)}</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               <div className="search-suggestions">
                 <span className="mono" style={{ fontSize: 12, alignSelf: "center", opacity: 0.6 }}>TRY:</span>
                 {SEARCH_SUGGESTIONS.map((s) => (
                   <button
                     key={s.id}
                     className="chip"
-                    onClick={() => onChange(s.id)}
+                    onClick={() => onChange(s.label)}
                   >
                     {s.label}
                   </button>
@@ -153,7 +282,6 @@ const HeroSection = forwardRef<HeroSectionHandle, HeroSectionProps>(
             </div>
           </div>
 
-          {/* Floating snacks */}
           <svg className="float-snack" style={{ top: "15%", left: "8%" }} width="80" height="80" viewBox="0 0 80 80">
             <ellipse cx="40" cy="60" rx="22" ry="6" fill="#1A1A2E" opacity="0.15" />
             <path d="M22 30 L26 65 Q26 70 32 70 L48 70 Q54 70 54 65 L58 30 Z" fill="#FF3D7F" stroke="#1A1A2E" strokeWidth="3" />
