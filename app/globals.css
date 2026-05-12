@@ -541,28 +541,36 @@ section { position: relative; padding: 100px 36px; }
 .filmstrip-section {
   background: var(--ink);
   color: var(--cream);
-  padding: 100px 0;
+  padding: 56px 0 64px;
   overflow: hidden;
 }
-.filmstrip-section .container { padding: 0 36px; margin-bottom: 40px; }
-.filmstrip-section .section-title { color: var(--cream); }
+.filmstrip-section .container { padding: 0 36px; margin-bottom: 20px; }
+.filmstrip-section .section-title {
+  color: var(--cream);
+  font-size: clamp(36px, 4.5vw, 64px);
+  margin-bottom: 8px;
+}
 .filmstrip-section .section-title .accent { color: var(--yellow); }
-.filmstrip-section .section-sub { color: rgba(255,248,231,.7); }
+.filmstrip-section .section-sub {
+  color: rgba(255,248,231,.7);
+  margin-bottom: 24px;
+  font-size: 16px;
+}
 
 .filmstrip {
   background: #0d0d1f;
   border-top: 8px solid var(--ink);
   border-bottom: 8px solid var(--ink);
   position: relative;
-  padding: 32px 0;
+  padding: 24px 0;
 }
 .filmstrip::before, .filmstrip::after {
   content: '';
   position: absolute;
   left: 0; right: 0;
-  height: 32px;
-  background-image: radial-gradient(circle, var(--ink) 6px, transparent 7px);
-  background-size: 40px 32px;
+  height: 24px;
+  background-image: radial-gradient(circle, var(--ink) 5px, transparent 6px);
+  background-size: 36px 24px;
   background-position: 0 center;
 }
 .filmstrip::before { top: 0; }
@@ -570,14 +578,14 @@ section { position: relative; padding: 100px 36px; }
 
 .filmstrip-track {
   display: flex;
-  gap: 24px;
+  gap: 20px;
   padding: 0 36px;
   will-change: transform;
 }
 .frame {
   flex-shrink: 0;
-  width: 320px;
-  aspect-ratio: 4/5;
+  height: clamp(260px, 52vh, 420px);
+  aspect-ratio: 2/3;
   border-radius: 12px;
   background: linear-gradient(135deg, #3a2a5a, #6a3a7a);
   border: 4px solid var(--cream);
@@ -586,16 +594,16 @@ section { position: relative; padding: 100px 36px; }
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 24px;
+  padding: 18px;
 }
 .frame::before {
   content: '';
   position: absolute; inset: 0;
-  background: linear-gradient(180deg, transparent 30%, rgba(0,0,0,.7) 100%);
+  background: linear-gradient(180deg, transparent 35%, rgba(0,0,0,.78) 100%);
 }
-.frame-num { position: absolute; top: 16px; left: 16px; font-family: var(--font-mono), 'JetBrains Mono', monospace; color: var(--yellow); font-size: 12px; }
-.frame-title { position: relative; font-family: var(--font-bagel), 'Bagel Fat One', sans-serif; font-size: 28px; color: var(--cream); line-height: 1; }
-.frame-meta { position: relative; font-family: var(--font-mono), 'JetBrains Mono', monospace; font-size: 12px; color: var(--yellow); margin-top: 6px; }
+.frame-num { position: absolute; top: 14px; left: 14px; font-family: var(--font-mono), 'JetBrains Mono', monospace; color: var(--yellow); font-size: 11px; }
+.frame-title { position: relative; font-family: var(--font-bagel), 'Bagel Fat One', sans-serif; font-size: clamp(20px, 1.6vw, 26px); color: var(--cream); line-height: 1; }
+.frame-meta { position: relative; font-family: var(--font-mono), 'JetBrains Mono', monospace; font-size: 11px; color: var(--yellow); margin-top: 5px; }
 
 /* ============ COMMENTS ============ */
 .comments {
