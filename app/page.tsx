@@ -14,6 +14,7 @@ import EmotionSection from "@/components/pop/EmotionSection";
 import AudienceVsCriticsSection from "@/components/pop/AudienceVsCriticsSection";
 import ClusterSection from "@/components/pop/ClusterSection";
 import CharacterSection from "@/components/pop/CharacterSection";
+import SnackCorrelationSection from "@/components/pop/SnackCorrelationSection";
 import FilmstripSection from "@/components/pop/FilmstripSection";
 import CommentsSection from "@/components/pop/CommentsSection";
 import FooterSection from "@/components/pop/FooterSection";
@@ -274,6 +275,7 @@ export default function Home() {
           <AudienceVsCriticsSection avc={insights?.audienceVsCritics} />
           <ClusterSection clusters={insights?.clusters} />
           <CharacterSection characters={insights?.characters} />
+          <SnackCorrelationSection insights={insights} />
           <CommentsSection reviews={movieData.reviews} />
         </>
       )}

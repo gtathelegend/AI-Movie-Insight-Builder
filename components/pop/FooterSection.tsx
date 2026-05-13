@@ -3,7 +3,6 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { SNACKS } from "./data";
 
 export default function FooterSection() {
   const footerRef = useRef<HTMLElement>(null);
@@ -12,22 +11,6 @@ export default function FooterSection() {
     gsap.registerPlugin(ScrollTrigger);
 
     const ctx = gsap.context(() => {
-      ScrollTrigger.create({
-        trigger: footerRef.current?.querySelector(".snack-bar"),
-        start: "top 85%",
-        onEnter: () => {
-          gsap.from(".snack", {
-            y: 60,
-            scale: 0.8,
-            opacity: 0,
-            duration: 0.6,
-            stagger: 0.1,
-            ease: "back.out(1.5)",
-          });
-        },
-        once: true,
-      });
-
       ScrollTrigger.create({
         trigger: footerRef.current?.querySelector(".footer-grid"),
         start: "top 90%",
@@ -43,25 +26,6 @@ export default function FooterSection() {
 
   return (
     <footer className="pop-footer" ref={footerRef}>
-      <div className="container" style={{ textAlign: "center", paddingTop: 40 }}>
-        <span className="section-label mono" style={{ background: "var(--yellow)", color: "var(--ink)" }}>
-          // SNACK BAR
-        </span>
-        <h2 className="section-title" style={{ color: "var(--cream)" }}>
-          Grab a <span style={{ color: "var(--pink)" }}>treat</span> on the way out.
-        </h2>
-      </div>
-
-      <div className="snack-bar">
-        {SNACKS.map((s) => (
-          <div key={s.name} className="snack">
-            <div className="snack-icon">{s.icon}</div>
-            <div className="snack-name display">{s.name}</div>
-            <div className="snack-price mono">{s.price}</div>
-          </div>
-        ))}
-      </div>
-
       <div className="footer-grid">
         <div>
           <div className="footer-brand">

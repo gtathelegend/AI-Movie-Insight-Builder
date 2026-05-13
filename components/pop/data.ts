@@ -85,13 +85,6 @@ export const MOCK_AVC = {
   verdict: "Audiences connect more deeply than critics anticipated — particularly praising the emotional performances and immersive world-building that critics undervalued.",
 };
 
-export const SNACKS = [
-  { icon: "🍿", name: "Popcorn", price: "$6.50" },
-  { icon: "🥤", name: "Cola", price: "$4.00" },
-  { icon: "🍫", name: "Choc Bar", price: "$3.50" },
-  { icon: "🌭", name: "Hot Dog", price: "$7.00" },
-];
-
 export const FILMSTRIP_COLORS = [
   ["#FF3D7F", "#9B5DE5"],
   ["#FFD23F", "#F4A460"],
