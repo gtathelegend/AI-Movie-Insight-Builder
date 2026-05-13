@@ -106,7 +106,7 @@ export default function TrendingGrid({ onMovieClick }: TrendingGridProps = {}) {
                   }
                 >
                   <span className="poster-rank display">{m.rank}</span>
-                  <span className="poster-score mono">{m.score.toFixed(2)}</span>
+                  <span className="poster-score mono">{Math.round(m.score * 100)}</span>
                   {!m.poster && (
                     <div style={{ fontFamily: "var(--font-bagel),'Bagel Fat One',sans-serif", color: "rgba(255,255,255,0.9)", fontSize: 28, lineHeight: 0.9, padding: 24, textAlign: "center", textShadow: "3px 3px 0 rgba(0,0,0,0.3)" }}>
                       {m.title.toUpperCase()}

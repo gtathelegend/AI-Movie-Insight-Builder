@@ -85,13 +85,13 @@ export default function ScoreBucket({ score, label = "★ EXTRA BUTTER WORTHY �
       { opacity: 1, scale: 1, duration: 0.4, stagger: 0.04, ease: "back.out(2)", delay: 1.0 }
     );
 
-    // Count-up number
+    // Count-up number — render as 0–100 integer
     const obj = { v: 0 };
     gsap.to(obj, {
-      v: score,
+      v: score * 100,
       duration: 1.5,
       ease: "power2.out",
-      onUpdate: () => { if (scoreText) scoreText.textContent = obj.v.toFixed(2); },
+      onUpdate: () => { if (scoreText) scoreText.textContent = String(Math.round(obj.v)); },
     });
   }, [score]);
 
@@ -127,8 +127,8 @@ export default function ScoreBucket({ score, label = "★ EXTRA BUTTER WORTHY �
         </svg>
       </div>
       <div className="score-num display">
-        <span ref={scoreTextRef}>0.00</span>
-        <span className="denom">/1.00</span>
+        <span ref={scoreTextRef}>0</span>
+        <span className="denom">/100</span>
       </div>
       <div className="score-tagline mono">{label}</div>
     </div>

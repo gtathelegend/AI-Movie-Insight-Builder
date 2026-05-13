@@ -262,7 +262,7 @@ const HeroSection = forwardRef<HeroSectionHandle, HeroSectionProps>(
                         </div>
                       </div>
                       {r.score > 0 && (
-                        <span className="search-dropdown-score">{r.score.toFixed(2)}</span>
+                        <span className="search-dropdown-score">{Math.round(r.score * 100)}</span>
                       )}
                     </button>
                   ))}

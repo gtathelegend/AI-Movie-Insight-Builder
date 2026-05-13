@@ -4,8 +4,8 @@ type MarqueeStripProps = {
 };
 
 export default function MarqueeStrip({ movieTitle = "NEON HEARTS", score = 0.92 }: MarqueeStripProps) {
-  const displayScore = score.toFixed(2);
-  const content = `NOW SHOWING · ${movieTitle.toUpperCase()} · ${displayScore} / 1.00 · CRITICS' PICK · EXTRA BUTTER · `;
+  const displayScore = Math.round(score * 100);
+  const content = `NOW SHOWING · ${movieTitle.toUpperCase()} · ${displayScore} / 100 · CRITICS' PICK · EXTRA BUTTER · `;
 
   return (
     <div className="marquee">
