@@ -41,7 +41,7 @@ export default function NavBar({ onSearchClick, hasMovie = false }: NavBarProps)
         {hasMovie && <a href="#detail">Spotlight</a>}
         <a href="#filmstrip">Now Showing</a>
         {hasMovie && <a href="#comments">Reviews</a>}
-        <button className="nav-cta" onClick={onSearchClick}>
+        <button className="nav-cta" onClick={onSearchClick} suppressHydrationWarning>
           Search 🔍
         </button>
       </div>

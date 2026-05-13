@@ -217,6 +217,7 @@ const HeroSection = forwardRef<HeroSectionHandle, HeroSectionProps>(
                   className="search-btn"
                   onClick={onSubmit}
                   disabled={loading}
+                  suppressHydrationWarning
                 >
                   {loading ? (
                     "Loading…"
@@ -248,6 +249,7 @@ const HeroSection = forwardRef<HeroSectionHandle, HeroSectionProps>(
                       className={`search-dropdown-item ${i === activeIndex ? "active" : ""}`}
                       onMouseEnter={() => setActiveIndex(i)}
                       onClick={() => handlePick(r)}
+                      suppressHydrationWarning
                     >
                       <div
                         className="search-dropdown-poster"
@@ -274,6 +276,7 @@ const HeroSection = forwardRef<HeroSectionHandle, HeroSectionProps>(
                     key={s.id}
                     className="chip"
                     onClick={() => onChange(s.label)}
+                    suppressHydrationWarning
                   >
                     {s.label}
                   </button>
