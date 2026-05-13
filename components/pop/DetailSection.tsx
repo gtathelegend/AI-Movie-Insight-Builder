@@ -25,7 +25,6 @@ function getInitials(name: string) {
 
 export default function DetailSection({ movie, insights, loading }: DetailSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
-  const triggered = useRef(false);
 
   const displayTitle = movie?.title ?? MOCK_DETAIL.title;
   const displayYear = movie?.year ?? String(MOCK_DETAIL.year);
@@ -55,33 +54,38 @@ export default function DetailSection({ movie, insights, loading }: DetailSectio
     gsap.registerPlugin(ScrollTrigger);
 
     const ctx = gsap.context(() => {
-      ScrollTrigger.create({
-        trigger: sectionRef.current,
-        start: "top 70%",
-        onEnter: () => {
-          if (triggered.current) return;
-          triggered.current = true;
-          gsap.from(".detail-poster", { x: -80, opacity: 0, duration: 0.8, ease: "power3.out" });
-          gsap.from(".detail-info", { y: 40, opacity: 0, duration: 0.8, delay: 0.2, ease: "power3.out" });
-          gsap.from(".score-card", { x: 80, opacity: 0, duration: 0.8, delay: 0.3, ease: "power3.out" });
-          gsap.from(".cast-card", { y: 30, opacity: 0, duration: 0.5, stagger: 0.08, delay: 0.6 });
-        },
-        once: true,
-      });
-    }, sectionRef);
+      const root = sectionRef.current;
+      if (!root) return;
 
-    return () => ctx.revert();
-  }, []);
+      const poster = root.querySelector(".detail-poster");
+      const info = root.querySelector(".detail-info");
+      const score = root.querySelector(".score-card");
+      const castCards = root.querySelectorAll<HTMLElement>(".cast-card");
 
-  // Re-animate when real data arrives
-  useEffect(() => {
-    if (!movie) return;
-    triggered.current = false;
-    const ctx = gsap.context(() => {
-      gsap.fromTo(".detail-poster", { x: -40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, ease: "power3.out" });
-      gsap.fromTo(".detail-info", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, delay: 0.1, ease: "power3.out" });
-      gsap.fromTo(".score-card", { x: 40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, delay: 0.2, ease: "power3.out" });
-      gsap.fromTo(".cast-card", { y: 20, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.07, delay: 0.4, duration: 0.4 });
+      const tweens = [
+        poster && gsap.fromTo(poster, { x: -40, opacity: 0 }, {
+          x: 0, opacity: 1, duration: 0.6, ease: "power3.out", overwrite: "auto", clearProps: "transform",
+        }),
+        info && gsap.fromTo(info, { y: 20, opacity: 0 }, {
+          y: 0, opacity: 1, duration: 0.6, delay: 0.1, ease: "power3.out", overwrite: "auto", clearProps: "transform",
+        }),
+        score && gsap.fromTo(score, { x: 40, opacity: 0 }, {
+          x: 0, opacity: 1, duration: 0.6, delay: 0.2, ease: "power3.out", overwrite: "auto", clearProps: "transform",
+        }),
+        castCards.length && gsap.fromTo(castCards, { y: 16, opacity: 0 }, {
+          y: 0, opacity: 1, duration: 0.4, stagger: 0.06, delay: 0.35, ease: "power2.out",
+          overwrite: "auto",
+          // Commit final opacity AND clear transform so cards never get stuck mid-animation
+          clearProps: "transform",
+          onComplete: () => {
+            castCards.forEach((c) => { c.style.opacity = "1"; });
+          },
+        }),
+      ];
+
+      return () => {
+        tweens.forEach((t) => t && t.kill());
+      };
     }, sectionRef);
 
     return () => ctx.revert();

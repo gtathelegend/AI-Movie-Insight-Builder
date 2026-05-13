@@ -19,18 +19,19 @@ export default function PopcornRain({ enabled = true, hasMovie = false }: Popcor
     if (!container) return;
     const k = document.createElement("div");
     k.className = "kernel";
-    k.textContent = Math.random() > 0.4 ? "🍿" : "🌽";
+    k.textContent = Math.random() > 0.25 ? "🍿" : "🌽";
     k.style.left = Math.random() * 100 + "%";
     k.style.top = "-30px";
-    k.style.fontSize = 16 + Math.random() * 16 + "px";
+    k.style.fontSize = 14 + Math.random() * 10 + "px";
+    k.style.opacity = "0.7";
     k.style.position = "absolute";
     container.appendChild(k);
 
     gsap.to(k, {
       y: window.innerHeight + 50,
-      x: (Math.random() - 0.5) * 200,
-      rotation: Math.random() * 720 - 360,
-      duration: 4 + Math.random() * 3,
+      x: (Math.random() - 0.5) * 160,
+      rotation: Math.random() * 540 - 270,
+      duration: 5 + Math.random() * 3,
       ease: "power1.in",
       onComplete: () => k.remove(),
     });
@@ -38,7 +39,7 @@ export default function PopcornRain({ enabled = true, hasMovie = false }: Popcor
 
   function burst(n: number) {
     for (let i = 0; i < n; i++) {
-      setTimeout(() => spawnKernel(), i * 30);
+      setTimeout(() => spawnKernel(), i * 60);
     }
   }
 
@@ -56,9 +57,9 @@ export default function PopcornRain({ enabled = true, hasMovie = false }: Popcor
 
     intervalRef.current = setInterval(() => {
       if (activeRef.current) spawnKernel();
-    }, 280);
+    }, 900);
 
-    const burstSelectors = hasMovie ? ["#detail", "#breakdown", "#comments"] : [];
+    const burstSelectors = hasMovie ? ["#detail", "#comments"] : [];
     const bursts = burstSelectors
       .map((sel) => {
         // Avoid creating ScrollTriggers for elements that don't exist yet.
@@ -66,7 +67,7 @@ export default function PopcornRain({ enabled = true, hasMovie = false }: Popcor
         return ScrollTrigger.create({
           trigger: sel,
           start: "top 60%",
-          onEnter: () => burst(25),
+          onEnter: () => burst(8),
           once: true,
         });
       })
