@@ -182,13 +182,11 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
+      <body className={`${bagelFatOne.variable} ${jetbrainsMono.variable} ${nunito.variable}`}>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(WEBSITE_JSON_LD) }}
         />
-      </head>
-      <body className={`${bagelFatOne.variable} ${jetbrainsMono.variable} ${nunito.variable}`}>
         {children}
       </body>
     </html>

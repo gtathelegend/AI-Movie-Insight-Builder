@@ -39,50 +39,57 @@ const HeroSection = forwardRef<HeroSectionHandle, HeroSectionProps>(
       if (curtainRemovedRef.current) return;
       curtainRemovedRef.current = true;
 
-      const tl = gsap.timeline({ delay: 0.2 });
+      const ctx = gsap.context(() => {
+        const tl = gsap.timeline({ delay: 0.2 });
 
-      document.body.style.overflow = "hidden";
-      tl.to(curtainLRef.current, { x: "-100%", duration: 1.6, ease: "power3.inOut" }, 0)
-        .to(curtainRRef.current, { x: "100%", duration: 1.6, ease: "power3.inOut" }, 0)
-        .add(() => {
-          document.body.style.overflow = "";
-          curtainLRef.current?.remove();
-          curtainRRef.current?.remove();
-        }, ">-0.3");
+        document.body.style.overflow = "hidden";
+        tl.to(curtainLRef.current, { x: "-100%", duration: 1.6, ease: "power3.inOut" }, 0)
+          .to(curtainRRef.current, { x: "100%", duration: 1.6, ease: "power3.inOut" }, 0)
+          .add(() => {
+            document.body.style.overflow = "";
+            if (curtainLRef.current) curtainLRef.current.style.display = "none";
+            if (curtainRRef.current) curtainRRef.current.style.display = "none";
+          }, ">-0.3");
 
-      gsap.set(".reveal-word", { y: 80, opacity: 0 });
-      tl.to(".reveal-word", {
-        y: 0,
-        opacity: 1,
-        duration: 0.7,
-        stagger: 0.08,
-        ease: "back.out(1.4)",
-      }, 1.0)
-        .from(".hero-eyebrow", { y: -20, opacity: 0, duration: 0.5 }, "<-0.2")
-        .from(".hero-tagline", { y: 20, opacity: 0, duration: 0.5 }, "<+0.2")
-        .from(".search-wrap", { y: 30, opacity: 0, duration: 0.6, ease: "back.out(1.2)" }, "<")
-        .from(".search-suggestions .chip", { y: 10, opacity: 0, stagger: 0.04, duration: 0.3 }, "<+0.2")
-        .from(".float-snack", {
-          scale: 0,
-          rotation: "random(-180, 180)",
-          opacity: 0,
-          duration: 0.8,
-          stagger: 0.1,
-          ease: "back.out(1.7)",
-        }, "<-0.4");
+        gsap.set(".reveal-word", { y: 80, opacity: 0 });
+        tl.to(".reveal-word", {
+          y: 0,
+          opacity: 1,
+          duration: 0.7,
+          stagger: 0.08,
+          ease: "back.out(1.4)",
+        }, 1.0)
+          .from(".hero-eyebrow", { y: -20, opacity: 0, duration: 0.5 }, "<-0.2")
+          .from(".hero-tagline", { y: 20, opacity: 0, duration: 0.5 }, "<+0.2")
+          .from(".search-wrap", { y: 30, opacity: 0, duration: 0.6, ease: "back.out(1.2)" }, "<")
+          .from(".search-suggestions .chip", { y: 10, opacity: 0, stagger: 0.04, duration: 0.3 }, "<+0.2")
+          .from(".float-snack", {
+            scale: 0,
+            rotation: "random(-180, 180)",
+            opacity: 0,
+            duration: 0.8,
+            stagger: 0.1,
+            ease: "back.out(1.7)",
+          }, "<-0.4");
 
-      document.querySelectorAll<SVGElement>(".float-snack").forEach((el, i) => {
-        gsap.to(el, {
-          y: "random(-15, 15)",
-          x: "random(-10, 10)",
-          rotation: "random(-8, 8)",
-          duration: "random(3, 5)",
-          repeat: -1,
-          yoyo: true,
-          ease: "sine.inOut",
-          delay: i * 0.2,
+        document.querySelectorAll<SVGElement>(".float-snack").forEach((el, i) => {
+          gsap.to(el, {
+            y: "random(-15, 15)",
+            x: "random(-10, 10)",
+            rotation: "random(-8, 8)",
+            duration: "random(3, 5)",
+            repeat: -1,
+            yoyo: true,
+            ease: "sine.inOut",
+            delay: i * 0.2,
+          });
         });
-      });
+      }, heroRef);
+
+      return () => {
+        document.body.style.overflow = "";
+        ctx.revert();
+      };
     }, []);
 
     // ── Debounced live-search ─────────────────────────────────────────────

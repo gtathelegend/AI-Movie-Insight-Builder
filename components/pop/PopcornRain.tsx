@@ -82,6 +82,10 @@ export default function PopcornRain({ enabled = true, hasMovie = false }: Popcor
       trendingTrigger.kill();
       bursts.forEach((t) => t.kill());
       if (intervalRef.current) clearInterval(intervalRef.current);
+      if (containerRef.current) {
+        gsap.killTweensOf(containerRef.current.children);
+        containerRef.current.innerHTML = "";
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, hasMovie]);
