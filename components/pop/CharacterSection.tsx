@@ -12,15 +12,6 @@ type CharacterSectionProps = {
 
 const AVATAR_EMOJIS = ["🎭", "🎬", "⭐", "🌙", "🔥", "👑", "🎯", "🌟"];
 
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
-
 export default function CharacterSection({ characters }: CharacterSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const data = characters && characters.length > 0 ? characters : MOCK_CHARACTERS;
@@ -51,7 +42,7 @@ export default function CharacterSection({ characters }: CharacterSectionProps) 
   return (
     <section className="characters" id="characters" ref={sectionRef}>
       <div className="container">
-        <span className="section-label mono">// CHARACTER INTELLIGENCE</span>
+        <span className="section-label mono">{"// CHARACTER INTELLIGENCE"}</span>
         <h2 className="section-title">
           Who audiences <span style={{ color: "var(--yellow)" }}>remember</span>.
         </h2>

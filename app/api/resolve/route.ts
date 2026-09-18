@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   const tmdbId = tmdbIdParam ? parseInt(tmdbIdParam, 10) : NaN;
 
   if (!Number.isFinite(tmdbId)) {
-    return NextResponse.json({ error: "Invalid tmdbId" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid TMDb ID." }, { status: 400 });
   }
 
   const cached = cache.get(tmdbId);
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
 
   const apiKey = process.env.TMDB_API_KEY;
   if (!apiKey) {
-    return NextResponse.json({ error: "TMDB_API_KEY missing" }, { status: 500 });
+    return NextResponse.json({ error: "TMDB_API_KEY is missing." }, { status: 500 });
   }
 
   try {

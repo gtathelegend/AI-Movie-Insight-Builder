@@ -1,5 +1,6 @@
 import axios from "axios";
 import { scrapeIMDbReviews } from "@/lib/imdbScraper";
+import { cleanReviews } from "@/lib/utils";
 
 type TmdbFindResponse = {
   movie_results: Array<{ id: number }>;
@@ -14,7 +15,7 @@ type TmdbReviewsResponse = {
 export async function getTMDbReviews(imdbID: string): Promise<string[]> {
   const apiKey = process.env.TMDB_API_KEY;
 
-  if (!apiKey) {
+  if (!apiKey || !imdbID) {
     return [];
   }
 
@@ -28,7 +29,7 @@ export async function getTMDbReviews(imdbID: string): Promise<string[]> {
       timeout: 10000,
     });
 
-    const tmdbMovieId = findResponse.data.movie_results[0]?.id;
+    const tmdbMovieId = findResponse.data.movie_results?.[0]?.id;
 
     if (!tmdbMovieId) {
       return [];
@@ -43,21 +44,27 @@ export async function getTMDbReviews(imdbID: string): Promise<string[]> {
       timeout: 10000,
     });
 
-    return reviewResponse.data.results
-      .map((item) => item.content.trim())
-      .filter((text) => text.length > 0)
-      .slice(0, 20);
+    const rawContents = (reviewResponse.data.results ?? []).map((item) => item.content);
+    return cleanReviews(rawContents, 15);
   } catch {
     return [];
   }
 }
 
 export async function getReviews(imdbID: string): Promise<string[]> {
-  let reviews = await getTMDbReviews(imdbID);
+  if (!imdbID) return [];
 
-  if (!reviews || reviews.length === 0) {
-    reviews = await scrapeIMDbReviews(imdbID);
+  try {
+    // 1. Primary: TMDb audience reviews
+    let reviews = await getTMDbReviews(imdbID);
+
+    // 2. Fallback: IMDb scraping if TMDb returns zero reviews
+    if (!reviews || reviews.length === 0) {
+      reviews = await scrapeIMDbReviews(imdbID);
+    }
+
+    return reviews ?? [];
+  } catch {
+    return [];
   }
-
-  return reviews;
 }

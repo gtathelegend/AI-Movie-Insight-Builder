@@ -121,7 +121,7 @@ export default function SnackCorrelationSection({ insights }: SnackCorrelationSe
   return (
     <section className="snack-correlation" id="snack-correlation" ref={sectionRef}>
       <div className="container">
-        <span className="section-label mono">// SNACK SENTIMENT CORRELATION</span>
+        <span className="section-label mono">{"// SNACK SENTIMENT CORRELATION"}</span>
         <h2 className="section-title">
           What fans of this movie <span className="accent">crave</span>.
         </h2>

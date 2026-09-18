@@ -94,7 +94,7 @@ export default function DetailSection({ movie, insights, loading }: DetailSectio
   return (
     <section className="detail" id="detail" ref={sectionRef}>
       <div className="container">
-        <span className="section-label mono">// SPOTLIGHT</span>
+        <span className="section-label mono">{"// SPOTLIGHT"}</span>
         <h2 className="section-title" style={{ color: "var(--white)" }}>
           Today&rsquo;s pick of
           <br />

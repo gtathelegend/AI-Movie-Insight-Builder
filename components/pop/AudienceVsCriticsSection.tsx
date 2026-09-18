@@ -36,7 +36,7 @@ export default function AudienceVsCriticsSection({ avc }: AudienceVsCriticsSecti
   return (
     <section className="avc" id="avc" ref={sectionRef}>
       <div className="container">
-        <span className="section-label mono">// AUDIENCE VS CRITICS</span>
+        <span className="section-label mono">{"// AUDIENCE VS CRITICS"}</span>
         <h2 className="section-title">
           Who was <span className="accent">right</span>?
         </h2>

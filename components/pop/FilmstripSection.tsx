@@ -108,7 +108,7 @@ export default function FilmstripSection({ onFrameClick }: FilmstripSectionProps
     <section className="filmstrip-section" id="filmstrip" ref={sectionRef}>
       <div className="container">
         <span className="section-label mono" style={{ background: "var(--yellow)", color: "var(--ink)" }}>
-          // NOW SHOWING
+          {"// NOW SHOWING"}
         </span>
         <h2 className="section-title">
           Eight reels of

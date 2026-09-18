@@ -120,11 +120,13 @@ export async function analyzeReviewsWithAI(
     if (error instanceof ApiError) throw error;
 
     if (axios.isAxiosError(error)) {
-      const msg =
-        typeof error.response?.data === "object" && error.response?.data !== null
-          ? JSON.stringify(error.response.data)
-          : error.message;
-      throw new ApiError(`OpenRouter request failed: ${msg}`, 500);
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        throw new ApiError("OpenRouter authentication failed. Please check your API key.", 500);
+      }
+      if (error.code === "ECONNABORTED" || error.message.includes("timeout")) {
+        throw new ApiError("OpenRouter request timed out.", 504);
+      }
+      throw new ApiError("Failed to communicate with OpenRouter AI service.", 502);
     }
 
     throw new ApiError("Failed to analyze reviews with AI.", 500);

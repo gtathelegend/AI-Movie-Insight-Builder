@@ -57,7 +57,7 @@ export default function EmotionSection({ emotions }: EmotionSectionProps) {
   return (
     <section className="emotions" id="emotions" ref={sectionRef}>
       <div className="container">
-        <span className="section-label mono">// EMOTION INTELLIGENCE</span>
+        <span className="section-label mono">{"// EMOTION INTELLIGENCE"}</span>
         <h2 className="section-title">
           How it <span className="accent">feels</span>.
         </h2>

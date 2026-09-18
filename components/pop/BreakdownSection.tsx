@@ -84,7 +84,7 @@ export default function BreakdownSection({ insights }: BreakdownSectionProps) {
   return (
     <section className="breakdown" id="breakdown" ref={sectionRef}>
       <div className="container">
-        <span className="section-label mono">// SCORE BREAKDOWN</span>
+        <span className="section-label mono">{"// SCORE BREAKDOWN"}</span>
         <h2 className="section-title">
           What makes it <span className="accent">pop</span>.
         </h2>

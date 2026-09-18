@@ -6,8 +6,6 @@ import { defineConfig } from "prisma/config";
 loadEnv({ path: ".env.local" });
 loadEnv({ path: ".env" });
 
-const ADAPTER_PKG = "@prisma/adapter-pg";
-
 // Prisma 7 config: connection URL is no longer in schema.prisma — it lives here
 // (for Migrate + db push) and is also passed to the PrismaClient constructor (runtime).
 export default defineConfig({

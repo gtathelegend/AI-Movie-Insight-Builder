@@ -41,8 +41,11 @@ async function streamAnalysis(
   });
 
   if (!response.ok || !response.body) {
-    const err = await response.json().catch(() => ({ error: "AI analysis failed." })) as { error?: string };
-    throw new Error(err.error ?? "AI analysis failed.");
+    const err = (await response.json().catch(() => ({ error: "AI analysis is temporarily unavailable." }))) as {
+      error?: string;
+      message?: string;
+    };
+    throw new Error(err.message || err.error || "AI analysis is temporarily unavailable.");
   }
 
   const reader = response.body.getReader();
@@ -59,12 +62,24 @@ async function streamAnalysis(
     buffer = messages.pop() ?? "";
 
     for (const message of messages) {
-      if (!message.startsWith("data: ")) continue;
-      const event = JSON.parse(message.slice(6)) as SSEEvent;
+      const trimmedMessage = message.trim();
+      if (!trimmedMessage.startsWith("data: ")) continue;
 
-      if (event.step === "complete") return event.data;
-      if (event.step === "error") throw new Error(event.error);
-      if ("message" in event) onStep(event.message);
+      try {
+        const event = JSON.parse(trimmedMessage.slice(6)) as SSEEvent;
+
+        if (event.step === "complete") return event.data;
+        if (event.step === "error") {
+          throw new Error(event.message || event.error || "AI analysis is temporarily unavailable.");
+        }
+        if ("message" in event && event.message) {
+          onStep(event.message);
+        }
+      } catch (parseError) {
+        if (parseError instanceof Error && !parseError.message.includes("JSON")) {
+          throw parseError;
+        }
+      }
     }
   }
 
@@ -94,6 +109,7 @@ export default function Home() {
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
 
   const heroRef = useRef<HeroSectionHandle>(null);
+  const activeRequestIdRef = useRef(0);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -101,17 +117,25 @@ export default function Home() {
 
   // Core analysis pipeline given a known IMDb id
   const runAnalysis = useCallback(async (imdbID: string) => {
+    const requestId = ++activeRequestIdRef.current;
+
     setLoading(true);
     setError(null);
     setInfoMessage(null);
     setMovieData(null);
     setInsights(null);
-    setAnalysisStep("Fetching movie details...");
+    setAnalysisStep("Finding movie...");
 
     try {
       const movieRes = await fetch(`/api/movie?imdbID=${encodeURIComponent(imdbID)}`);
       const movieJson = (await movieRes.json()) as MovieResponse & { error?: string };
-      if (!movieRes.ok) throw new Error(movieJson.error ?? "Failed to fetch movie details.");
+
+      if (activeRequestIdRef.current !== requestId) return;
+
+      if (!movieRes.ok) {
+        throw new Error(movieJson.error ?? "Failed to fetch movie details.");
+      }
+
       setMovieData(movieJson);
       setAnalysisStep(null);
 
@@ -119,32 +143,50 @@ export default function Home() {
         document.getElementById("detail")?.scrollIntoView({ behavior: "smooth" });
       }, 300);
 
+      // Check if audience reviews exist
       if (!movieJson.reviews || movieJson.reviews.length === 0) {
-        setInfoMessage("Insufficient audience reviews for AI sentiment analysis.");
+        setInfoMessage("Not enough public audience reviews were available for AI sentiment analysis.");
         return;
       }
 
-      const result = await streamAnalysis(
-        {
-          imdbID,
-          reviews: movieJson.reviews.slice(0, 10),
-          movieTitle: movieJson.movie.title,
-          movieYear: movieJson.movie.year,
-          rottenTomatoes: movieJson.movie.rottenTomatoes,
-        },
-        (msg) => setAnalysisStep(msg),
-      );
+      // Step 2: Stream AI Analysis
+      try {
+        setAnalysisStep("AI is analyzing audience reviews...");
+        const result = await streamAnalysis(
+          {
+            imdbID,
+            reviews: movieJson.reviews.slice(0, 10),
+            movieTitle: movieJson.movie.title,
+            movieYear: movieJson.movie.year,
+            rottenTomatoes: movieJson.movie.rottenTomatoes,
+          },
+          (msg) => {
+            if (activeRequestIdRef.current === requestId) {
+              setAnalysisStep(msg);
+            }
+          },
+        );
 
-      setInsights(result);
+        if (activeRequestIdRef.current !== requestId) return;
 
-      setTimeout(() => {
-        document.getElementById("emotions")?.scrollIntoView({ behavior: "smooth" });
-      }, 600);
+        setInsights(result);
+
+        setTimeout(() => {
+          document.getElementById("emotions")?.scrollIntoView({ behavior: "smooth" });
+        }, 600);
+      } catch {
+        if (activeRequestIdRef.current !== requestId) return;
+        // Keep movie metadata visible; show graceful AI failure notice
+        setError("AI analysis is temporarily unavailable.");
+      }
     } catch (unknownError) {
+      if (activeRequestIdRef.current !== requestId) return;
       setError(unknownError instanceof Error ? unknownError.message : "Unexpected error.");
     } finally {
-      setLoading(false);
-      setAnalysisStep(null);
+      if (activeRequestIdRef.current === requestId) {
+        setLoading(false);
+        setAnalysisStep(null);
+      }
     }
   }, []);
 
@@ -157,17 +199,22 @@ export default function Home() {
     }
 
     // Direct IMDb-ID path
-    if (/^tt\d{6,8}$/i.test(trimmed)) {
+    if (/^tt\d{7,8}$/i.test(trimmed)) {
       await runAnalysis(trimmed.toLowerCase());
       return;
     }
 
     // Title path: pick the top search match and resolve to IMDb
+    const requestId = ++activeRequestIdRef.current;
     setLoading(true);
     setError(null);
-    setAnalysisStep("Looking up movie...");
+    setInfoMessage(null);
+    setAnalysisStep("Finding movie...");
+
     try {
       const results = await searchTitle(trimmed);
+      if (activeRequestIdRef.current !== requestId) return;
+
       if (results.length === 0) {
         setError(`No movies matched "${trimmed}". Try a different title.`);
         setLoading(false);
@@ -175,9 +222,12 @@ export default function Home() {
         return;
       }
       const imdbID = await resolveTmdbToImdb(results[0].tmdbId);
+      if (activeRequestIdRef.current !== requestId) return;
+
       setQuery(results[0].title);
       await runAnalysis(imdbID);
     } catch (e) {
+      if (activeRequestIdRef.current !== requestId) return;
       setError(e instanceof Error ? e.message : "Search failed.");
       setLoading(false);
       setAnalysisStep(null);
@@ -186,13 +236,18 @@ export default function Home() {
 
   // Called by HeroSection autocomplete pick
   const handlePickResult = async (r: SearchResult) => {
+    const requestId = ++activeRequestIdRef.current;
     setLoading(true);
     setError(null);
-    setAnalysisStep("Looking up movie...");
+    setInfoMessage(null);
+    setAnalysisStep("Finding movie...");
+
     try {
       const imdbID = await resolveTmdbToImdb(r.tmdbId);
+      if (activeRequestIdRef.current !== requestId) return;
       await runAnalysis(imdbID);
     } catch (e) {
+      if (activeRequestIdRef.current !== requestId) return;
       setError(e instanceof Error ? e.message : "Could not load that movie.");
       setLoading(false);
       setAnalysisStep(null);
@@ -202,13 +257,18 @@ export default function Home() {
   // Called by TrendingGrid card click — same flow as autocomplete pick
   const handleTrendingClick = async (tmdbId: number, title: string) => {
     setQuery(title);
+    const requestId = ++activeRequestIdRef.current;
     setLoading(true);
     setError(null);
-    setAnalysisStep("Looking up movie...");
+    setInfoMessage(null);
+    setAnalysisStep("Finding movie...");
+
     try {
       const imdbID = await resolveTmdbToImdb(tmdbId);
+      if (activeRequestIdRef.current !== requestId) return;
       await runAnalysis(imdbID);
     } catch (e) {
+      if (activeRequestIdRef.current !== requestId) return;
       setError(e instanceof Error ? e.message : "Could not load that movie.");
       setLoading(false);
       setAnalysisStep(null);

@@ -108,7 +108,12 @@ export async function POST(request: NextRequest) {
 
         const validated = aiInsightsSchema.safeParse(aiRaw);
         if (!validated.success) {
-          send({ step: "error", error: "AI response did not match expected schema." });
+          console.error("AI output failed Zod schema validation:", validated.error.flatten());
+          send({
+            step: "error",
+            message: "AI response did not match expected schema.",
+            error: "AI response did not match expected schema.",
+          });
           controller.close();
           return;
         }
@@ -119,7 +124,7 @@ export async function POST(request: NextRequest) {
         };
 
         // ── Persist to both cache layers ──────────────────────────────────
-        send({ step: "saving", message: "Saving to database..." });
+        send({ step: "saving", message: "Saving analysis..." });
 
         setCache(cacheKey, response);
 
@@ -155,7 +160,7 @@ export async function POST(request: NextRequest) {
               ? error.message
               : "Failed to analyze reviews.";
 
-        send({ step: "error", error: message });
+        send({ step: "error", message, error: message });
         controller.close();
       }
     },

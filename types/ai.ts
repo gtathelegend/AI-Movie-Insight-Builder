@@ -53,4 +53,4 @@ export type SSEEvent =
   | { step: "processing"; message: string }
   | { step: "saving"; message: string }
   | { step: "complete"; data: AnalyzeResponse }
-  | { step: "error"; error: string };
+  | { step: "error"; message: string; error?: string };

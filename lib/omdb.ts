@@ -48,14 +48,15 @@ export async function getMovieMetadata(imdbID: string): Promise<Movie> {
     }
 
     return {
-      title: data.Title ?? "Unknown",
+      title: data.Title && data.Title !== "N/A" ? data.Title : "Unknown",
       poster: data.Poster && data.Poster !== "N/A" ? data.Poster : "",
-      year: data.Year ?? "Unknown",
-      rating: data.imdbRating ?? "N/A",
-      plot: data.Plot ?? "No plot available.",
-      cast: data.Actors
-        ? data.Actors.split(",").map((n) => n.trim()).filter(Boolean)
-        : [],
+      year: data.Year && data.Year !== "N/A" ? data.Year : "Unknown",
+      rating: data.imdbRating && data.imdbRating !== "N/A" ? data.imdbRating : "Not rated.",
+      plot: data.Plot && data.Plot !== "N/A" ? data.Plot : "Plot unavailable.",
+      cast:
+        data.Actors && data.Actors !== "N/A"
+          ? data.Actors.split(",").map((n) => n.trim()).filter(Boolean)
+          : [],
       genre: data.Genre && data.Genre !== "N/A" ? data.Genre : undefined,
       director: data.Director && data.Director !== "N/A" ? data.Director : undefined,
       runtime: data.Runtime && data.Runtime !== "N/A" ? data.Runtime : undefined,

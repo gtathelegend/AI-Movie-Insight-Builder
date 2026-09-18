@@ -70,7 +70,7 @@ export default function TrendingGrid({ onMovieClick }: TrendingGridProps = {}) {
   return (
     <section className="trending" id="trending" ref={sectionRef}>
       <div className="container">
-        <span className="section-label mono">// TRENDING THIS WEEK</span>
+        <span className="section-label mono">{"// TRENDING THIS WEEK"}</span>
         <h2 className="section-title">
           Buttery <span className="accent">bangers</span>
           <br />

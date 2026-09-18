@@ -104,7 +104,7 @@ export default function CommentsSection({ reviews }: CommentsSectionProps) {
   return (
     <section className="comments" id="comments" ref={sectionRef}>
       <div className="container">
-        <span className="section-label mono">// FROM THE BACK ROW</span>
+        <span className="section-label mono">{"// FROM THE BACK ROW"}</span>
         <h2 className="section-title">
           What viewers are <span className="accent">whispering</span>.
         </h2>

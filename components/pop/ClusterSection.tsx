@@ -39,7 +39,7 @@ export default function ClusterSection({ clusters }: ClusterSectionProps) {
   return (
     <section className="clusters" id="clusters" ref={sectionRef}>
       <div className="container">
-        <span className="section-label mono">// AUDIENCE CLUSTERS</span>
+        <span className="section-label mono">{"// AUDIENCE CLUSTERS"}</span>
         <h2 className="section-title">
           What they <span className="accent">said</span>.
         </h2>
@@ -53,7 +53,7 @@ export default function ClusterSection({ clusters }: ClusterSectionProps) {
             <div key={i} className="cluster-card" data-cluster>
               <div className="cluster-pct">{Math.round(cluster.percentage)}%</div>
               <div className="cluster-label display">{cluster.label}</div>
-              <p className="cluster-rep">"{cluster.representative}"</p>
+              <p className="cluster-rep">&ldquo;{cluster.representative}&rdquo;</p>
               <div className="cluster-bar">
                 <div
                   className="cluster-bar-fill"
