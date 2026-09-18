@@ -7,6 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import NavBar from "@/components/pop/NavBar";
 import HeroSection, { type HeroSectionHandle } from "@/components/pop/HeroSection";
 import MarqueeStrip from "@/components/pop/MarqueeStrip";
+import AnalysisProgressStepper from "@/components/pop/AnalysisProgressStepper";
 import TrendingGrid from "@/components/pop/TrendingGrid";
 import DetailSection from "@/components/pop/DetailSection";
 import BreakdownSection from "@/components/pop/BreakdownSection";
@@ -15,6 +16,7 @@ import AudienceVsCriticsSection from "@/components/pop/AudienceVsCriticsSection"
 import ClusterSection from "@/components/pop/ClusterSection";
 import CharacterSection from "@/components/pop/CharacterSection";
 import SnackCorrelationSection from "@/components/pop/SnackCorrelationSection";
+import SourceTransparencySection from "@/components/pop/SourceTransparencySection";
 import FilmstripSection from "@/components/pop/FilmstripSection";
 import CommentsSection from "@/components/pop/CommentsSection";
 import FooterSection from "@/components/pop/FooterSection";
@@ -306,12 +308,11 @@ export default function Home() {
       <MarqueeStrip movieTitle={marqueeTitle} score={marqueeScore} />
 
       {analysisStep && (
-        <div style={{ padding: "28px 36px", background: "var(--cream)", display: "flex", justifyContent: "center" }}>
-          <div className="analysis-progress">
-            <div className="progress-dot" />
-            <span>{analysisStep}</span>
-          </div>
-        </div>
+        <AnalysisProgressStepper
+          currentStepMessage={analysisStep}
+          hasMovie={!!movieData}
+          hasReviews={!!(movieData?.reviews && movieData.reviews.length > 0)}
+        />
       )}
 
       {(error || infoMessage) && !analysisStep && (
@@ -346,6 +347,7 @@ export default function Home() {
             collectedCount={movieData.collectedCount ?? movieData.reviews.length}
             analyzedCount={insights?.analyzedCount}
           />
+          <SourceTransparencySection />
         </>
       )}
 

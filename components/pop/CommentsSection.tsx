@@ -122,13 +122,16 @@ export default function CommentsSection({
   return (
     <section className="comments" id="comments" ref={sectionRef}>
       <div className="container">
-        <span className="section-label mono">{"// FROM THE BACK ROW"}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          <span className="section-label mono">{"// REAL AUDIENCE REVIEWS"}</span>
+          <span className="tag-audience-evidence">PRIMARY EVIDENCE</span>
+        </div>
         <h2 className="section-title">
-          What viewers are <span className="accent">whispering</span>.
+          Verified Review <span className="accent">Evidence</span>.
         </h2>
         <p className="section-sub">
           {hasRealReviews
-            ? `${totalCollected} audience review${totalCollected === 1 ? "" : "s"} collected · ${totalAnalyzed} analyzed by AI. Source: ${sourceDisplay}.`
+            ? `${totalCollected} audience review${totalCollected === 1 ? "" : "s"} collected · ${totalAnalyzed} analyzed by AI · Source: ${sourceDisplay}.`
             : "Real reviews from real people who actually saw the movie. No bots. No paid takes."}
         </p>
         <div className="comment-grid">
@@ -156,11 +159,11 @@ export default function CommentsSection({
               </div>
               <div className="comment-text">&ldquo;{c.preview}&rdquo;</div>
               <div className="comment-foot">
-                <span className="comment-time mono" style={{ fontSize: 11, opacity: 0.8 }}>
+                <span className="comment-time mono" style={{ fontSize: 11, opacity: 0.85 }}>
                   {c.isReal ? "★ Verified Audience Feedback" : "Recently"}
                 </span>
                 <div className="comment-likes">
-                  <span style={{ fontSize: 12, opacity: 0.85 }}>Click to expand ↗</span>
+                  <span className="mono" style={{ fontSize: 11, color: "var(--pink)", fontWeight: 800 }}>Read full ↗</span>
                 </div>
               </div>
             </div>

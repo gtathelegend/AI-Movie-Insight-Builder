@@ -36,7 +36,10 @@ export default function AudienceVsCriticsSection({ avc }: AudienceVsCriticsSecti
   return (
     <section className="avc" id="avc" ref={sectionRef}>
       <div className="container">
-        <span className="section-label mono">{"// AUDIENCE VS CRITICS"}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          <span className="section-label mono">{"// AUDIENCE VS CRITICS SIGNAL"}</span>
+          <span className="tag-ai-synthesis">SIGNAL COMPARISON</span>
+        </div>
         <h2 className="section-title">
           Who was <span className="accent">right</span>?
         </h2>
@@ -48,8 +51,8 @@ export default function AudienceVsCriticsSection({ avc }: AudienceVsCriticsSecti
 
         <div className="avc-split">
           <div className="avc-side critics">
-            <div className="avc-big-score critics">{data.criticScore}</div>
-            <div className="avc-side-label">CRITICS SCORE</div>
+            <div className="avc-big-score critics">{data.criticScore}%</div>
+            <div className="avc-side-label mono">ROTTEN TOMATOES TOMATOMETER</div>
           </div>
 
           <div className="avc-divider">
@@ -57,18 +60,22 @@ export default function AudienceVsCriticsSection({ avc }: AudienceVsCriticsSecti
           </div>
 
           <div className="avc-side audience">
-            <div className="avc-big-score audience">{data.audienceScore}</div>
-            <div className="avc-side-label">AUDIENCE SCORE</div>
+            <div className="avc-big-score audience">{data.audienceScore}%</div>
+            <div className="avc-side-label mono">AUDIENCE SENTIMENT INDEX</div>
           </div>
         </div>
 
         <div className="avc-verdict">
-          {data.verdict}
-          {diff >= 10 && (
+          {data.verdict || "Audience reception and critic scores evaluated side by side."}
+          {diff >= 5 && (
             <span className="avc-diff-badge">
-              {winner} +{diff}
+              {winner} lead +{diff}%
             </span>
           )}
+        </div>
+
+        <div className="avc-methodology-note">
+          <span>ℹ Methodology Note: Audience Sentiment Index is synthesized from NLP analysis of real audience reviews. Critic score reflects aggregated Tomatometer ratings from OMDb / Rotten Tomatoes.</span>
         </div>
       </div>
     </section>
