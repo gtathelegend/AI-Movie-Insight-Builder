@@ -884,7 +884,7 @@ section { position: relative; padding: 100px 36px; }
   gap: 20px;
 }
 
-.subpage-links a {
+.subpage-links a:not(.subpage-back-btn) {
   font-weight: 800;
   font-size: 14px;
   color: var(--ink);
@@ -892,30 +892,45 @@ section { position: relative; padding: 100px 36px; }
   transition: color 0.15s ease;
 }
 
-.subpage-links a:hover,
-.subpage-links a.active {
+.subpage-links a:not(.subpage-back-btn):hover,
+.subpage-links a:not(.subpage-back-btn).active {
   color: var(--pink);
 }
 
+.subpage-links a.subpage-back-btn,
 .subpage-back-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   padding: 8px 18px;
   background: var(--ink);
-  color: var(--cream);
+  color: #FFF8E7 !important;
   border: 2px solid var(--ink);
   border-radius: 999px;
   font-weight: 800;
   font-size: 13px;
   text-decoration: none;
-  transition: transform 0.15s ease, background 0.15s ease;
+  box-shadow: 2px 2px 0 rgba(26, 17, 39, 0.25);
+  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 
+.subpage-links a.subpage-back-btn span,
+.subpage-back-btn span {
+  color: #FFF8E7 !important;
+}
+
+.subpage-links a.subpage-back-btn:hover,
 .subpage-back-btn:hover {
   background: var(--pink);
+  color: #FFFFFF !important;
+  border-color: var(--ink);
   transform: translate(-2px, -2px);
   box-shadow: 3px 3px 0 var(--ink);
+}
+
+.subpage-links a.subpage-back-btn:hover span,
+.subpage-back-btn:hover span {
+  color: #FFFFFF !important;
 }
 
 .subpage-main {
