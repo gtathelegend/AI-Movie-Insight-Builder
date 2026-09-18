@@ -267,6 +267,7 @@ Full-stack developer · AI enthusiast
 POP is a passion project exploring how real audience evidence and AI-generated synthesis can be combined into a transparent, joyful movie discovery experience.
 
 - **GitHub**: [github.com/gtathelegend](https://github.com/gtathelegend)
+- **LinkedIn**: [linkedin.com/in/vedaangsharma2006](https://www.linkedin.com/in/vedaangsharma2006)
 - **Email**: [info@vedaangsharma.in](mailto:info@vedaangsharma.in)
 
 ---

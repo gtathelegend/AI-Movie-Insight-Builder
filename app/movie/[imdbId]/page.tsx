@@ -24,6 +24,7 @@ export async function generateMetadata({ params }: MoviePageProps): Promise<Meta
   try {
     const movie = await getMovieMetadata(normalizedId);
     const title = `${movie.title} (${movie.year}) — Ratings, Reviews & Audience Insights | POP`;
+    const ogTitle = `${movie.title} (${movie.year}) — Audience Insights | POP`;
     const description = `Explore ${movie.title} (${movie.year}): IMDb rating ${movie.rating}, real audience reviews, viewer sentiment, emotional fingerprint, and critic comparison on POP.`;
     const canonicalUrl = `https://pop.vedaangsharma.in/movie/${normalizedId}`;
 
@@ -34,11 +35,11 @@ export async function generateMetadata({ params }: MoviePageProps): Promise<Meta
         canonical: canonicalUrl,
       },
       openGraph: {
-        title,
+        title: ogTitle,
         description,
         url: canonicalUrl,
         type: "video.movie",
-        siteName: "POP — AI Movie Insights",
+        siteName: "POP",
         images: movie.poster && movie.poster !== "N/A"
           ? [
               {
@@ -48,18 +49,18 @@ export async function generateMetadata({ params }: MoviePageProps): Promise<Meta
             ]
           : [
               {
-                url: "/pop-logo.png",
-                width: 512,
-                height: 512,
+                url: "https://pop.vedaangsharma.in/og-image.png",
+                width: 1200,
+                height: 630,
                 alt: "POP — AI Movie Insights",
               },
             ],
       },
       twitter: {
         card: "summary_large_image",
-        title,
+        title: ogTitle,
         description,
-        images: movie.poster && movie.poster !== "N/A" ? [movie.poster] : ["/pop-logo.png"],
+        images: movie.poster && movie.poster !== "N/A" ? [movie.poster] : ["https://pop.vedaangsharma.in/og-image.png"],
       },
     };
   } catch {

@@ -13,6 +13,7 @@ const DEVELOPER = {
   role: "Full-stack developer · AI enthusiast",
   bio: "Full-stack engineer passionate about building high-craft, evidence-grounded AI applications that feel responsive, transparent, and joyful to use.",
   github: "https://github.com/gtathelegend",
+  linkedin: "https://www.linkedin.com/in/vedaangsharma2006",
   email: "info@vedaangsharma.in",
 };
 
@@ -107,6 +108,15 @@ export default function AboutPage() {
               aria-label="Vedaang Sharma on GitHub (opens in new tab)"
             >
               GitHub ↗
+            </a>
+            <a
+              href={DEVELOPER.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="subpage-social-btn"
+              aria-label="Vedaang Sharma on LinkedIn (opens in new tab)"
+            >
+              LinkedIn ↗
             </a>
             <a
               href={`mailto:${DEVELOPER.email}`}

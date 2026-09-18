@@ -12,6 +12,7 @@ const DEVELOPER = {
   name: "Vedaang Sharma",
   role: "Full-stack developer · AI enthusiast",
   github: "https://github.com/gtathelegend",
+  linkedin: "https://www.linkedin.com/in/vedaangsharma2006",
   email: "info@vedaangsharma.in",
 };
 
@@ -59,6 +60,15 @@ export default function ContactPage() {
               aria-label="Vedaang Sharma on GitHub (opens in new tab)"
             >
               GitHub Profile ↗
+            </a>
+            <a
+              href={DEVELOPER.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="subpage-social-btn"
+              aria-label="Vedaang Sharma on LinkedIn (opens in new tab)"
+            >
+              LinkedIn Profile ↗
             </a>
           </div>
         </section>

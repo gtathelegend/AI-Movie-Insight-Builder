@@ -62,11 +62,11 @@ export const metadata: Metadata = {
   icons: {
     icon: "/pop-logo.png",
     shortcut: "/pop-logo.png",
-    apple: "/pop-logo.png",
+    apple: "/apple-touch-icon.png",
   },
   openGraph: {
     type: "website",
-    siteName: "POP — AI Movie Insights",
+    siteName: "POP",
     title: "POP — AI Movie Insights, Ratings & Audience Reviews",
     description:
       "Explore movie ratings, real audience reviews, viewer sentiment, emotional insights and AI-powered movie analysis. Search films by title or IMDb ID.",
@@ -74,10 +74,10 @@ export const metadata: Metadata = {
     locale: "en_US",
     images: [
       {
-        url: "/pop-logo.png",
-        width: 512,
-        height: 512,
-        alt: "POP — AI Movie Insights Logo",
+        url: "https://pop.vedaangsharma.in/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "POP — AI Movie Insights",
       },
     ],
   },
@@ -86,8 +86,12 @@ export const metadata: Metadata = {
     title: "POP — AI Movie Insights, Ratings & Audience Reviews",
     description:
       "Explore movie ratings, real audience reviews, viewer sentiment, emotional insights and AI-powered movie analysis.",
-    creator: "@vedaangsharma",
-    images: ["/pop-logo.png"],
+    images: [
+      {
+        url: "https://pop.vedaangsharma.in/og-image.png",
+        alt: "POP — AI Movie Insights",
+      },
+    ],
   },
   robots: {
     index: true,
@@ -114,7 +118,7 @@ const WEBSITE_JSON_LD = {
       "@type": "WebSite",
       "@id": "https://pop.vedaangsharma.in/#website",
       "url": "https://pop.vedaangsharma.in",
-      "name": "POP — AI Movie Insights",
+      "name": "POP",
       "description": "AI-powered movie intelligence platform providing verified metadata, audience sentiment, review synthesis, and critic comparisons.",
       "potentialAction": {
         "@type": "SearchAction",
@@ -124,6 +128,34 @@ const WEBSITE_JSON_LD = {
         },
         "query-input": "required name=search_term_string",
       },
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://pop.vedaangsharma.in/#organization",
+      "name": "POP",
+      "url": "https://pop.vedaangsharma.in",
+      "logo": "https://pop.vedaangsharma.in/pop-logo.png",
+      "description": "AI-powered movie intelligence platform providing verified metadata, audience sentiment, review synthesis, and critic comparisons.",
+      "sameAs": [
+        "https://github.com/gtathelegend",
+        "https://www.linkedin.com/in/vedaangsharma2006"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "info@vedaangsharma.in",
+        "contactType": "customer support"
+      }
+    },
+    {
+      "@type": "Person",
+      "@id": "https://pop.vedaangsharma.in/#creator",
+      "name": "Vedaang Sharma",
+      "url": "https://github.com/gtathelegend",
+      "email": "mailto:info@vedaangsharma.in",
+      "sameAs": [
+        "https://github.com/gtathelegend",
+        "https://www.linkedin.com/in/vedaangsharma2006"
+      ]
     },
     {
       "@type": "SoftwareApplication",

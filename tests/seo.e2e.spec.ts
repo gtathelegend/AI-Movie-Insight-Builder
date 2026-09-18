@@ -175,4 +175,64 @@ test.describe("POP SEO & Search Discoverability E2E", () => {
     }
     expect(hasFaqSchema).toBe(true);
   });
+
+  test("Test 9: OG image /og-image.png exists, is publicly accessible, and has valid image headers", async ({ request }) => {
+    const response = await request.get("/og-image.png");
+    expect(response.status()).toBe(200);
+    const contentType = response.headers()["content-type"];
+    expect(contentType).toContain("image/png");
+    const body = await response.body();
+    expect(body.length).toBeGreaterThan(1000);
+  });
+
+  test("Test 10: OpenGraph 1200x630 dimensions and Twitter Card summary_large_image are present", async ({ page }) => {
+    await page.goto("/");
+
+    const ogImage = page.locator('meta[property="og:image"]');
+    await expect(ogImage).toHaveAttribute("content", "https://pop.vedaangsharma.in/og-image.png");
+
+    const ogWidth = page.locator('meta[property="og:image:width"]');
+    await expect(ogWidth).toHaveAttribute("content", "1200");
+
+    const ogHeight = page.locator('meta[property="og:image:height"]');
+    await expect(ogHeight).toHaveAttribute("content", "630");
+
+    const twitterCard = page.locator('meta[name="twitter:card"]');
+    await expect(twitterCard).toHaveAttribute("content", "summary_large_image");
+
+    const twitterImage = page.locator('meta[name="twitter:image"]');
+    await expect(twitterImage).toHaveAttribute("content", "https://pop.vedaangsharma.in/og-image.png");
+  });
+
+  test("Test 11: Organization and Person structured data contain accurate creator and social links", async ({ page }) => {
+    await page.goto("/");
+
+    const jsonLdScripts = page.locator('script[type="application/ld+json"]');
+    const count = await jsonLdScripts.count();
+    let hasOrg = false;
+    let hasPerson = false;
+
+    for (let i = 0; i < count; i++) {
+      const text = await jsonLdScripts.nth(i).innerText();
+      if (text.includes('"@type":"Organization"') && text.includes("https://github.com/gtathelegend")) {
+        hasOrg = true;
+      }
+      if (text.includes('"@type":"Person"') && text.includes("Vedaang Sharma") && text.includes("https://www.linkedin.com/in/vedaangsharma2006")) {
+        hasPerson = true;
+      }
+    }
+    expect(hasOrg).toBe(true);
+    expect(hasPerson).toBe(true);
+  });
+
+  test("Test 12: Web app manifest is accessible and contains correct POP branding", async ({ request }) => {
+    const response = await request.get("/manifest.webmanifest");
+    expect(response.status()).toBe(200);
+
+    const data = await response.json();
+    expect(data.name).toBe("POP — AI Movie Insights");
+    expect(data.short_name).toBe("POP");
+    expect(data.icons.length).toBeGreaterThanOrEqual(2);
+  });
 });
+

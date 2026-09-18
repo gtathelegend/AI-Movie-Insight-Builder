@@ -23,7 +23,7 @@ import FaqSection from "@/components/pop/FaqSection";
 import FooterSection from "@/components/pop/FooterSection";
 import PopcornRain from "@/components/pop/PopcornRain";
 
-import type { MovieResponse, ReviewSource } from "@/types/movie";
+import type { MovieResponse } from "@/types/movie";
 import type { AnalyzeResponse } from "@/types/ai";
 import type { SearchResult } from "@/app/api/search/route";
 import { streamAnalysis } from "@/lib/clientStream";
