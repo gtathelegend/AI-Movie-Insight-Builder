@@ -223,4 +223,26 @@ test.describe("Movie Analysis Pipeline E2E", () => {
 
     await expect(page.getByRole("heading", { name: "The Matrix" })).toBeVisible();
   });
+
+  test("Test 8: About page renders correctly with creator attribution and tech stack", async ({ page }) => {
+    await page.goto("/about");
+    await expect(page.getByRole("heading", { name: /Honest cinema insights/i })).toBeVisible();
+    await expect(page.getByRole("main").getByText("Vedaang Sharma")).toBeVisible();
+    await expect(page.getByRole("main").getByRole("link", { name: /Send email to Vedaang/i })).toBeVisible();
+  });
+
+  test("Test 9: Privacy Policy page renders all third-party disclosures", async ({ page }) => {
+    await page.goto("/privacy");
+    await expect(page.getByRole("heading", { name: "Privacy Policy" })).toBeVisible();
+    await expect(page.getByText("The Movie Database (TMDb):")).toBeVisible();
+    await expect(page.getByText("OMDb API:")).toBeVisible();
+    await expect(page.getByText("OpenRouter:")).toBeVisible();
+  });
+
+  test("Test 10: Contact page renders email link and developer profiles", async ({ page }) => {
+    await page.goto("/contact");
+    await expect(page.getByRole("heading", { name: /talk cinema/i })).toBeVisible();
+    await expect(page.getByRole("main").getByRole("link", { name: /Send email to Vedaang/i })).toBeVisible();
+    await expect(page.getByRole("main").getByRole("link", { name: /GitHub/i })).toBeVisible();
+  });
 });
