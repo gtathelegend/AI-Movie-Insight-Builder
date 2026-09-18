@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     "POP Cinema",
     "AI Movie Insight Builder",
   ],
-  authors: [{ name: "Vedaang Sharma", url: "https://github.com/vedaangsharma2006" }],
+  authors: [{ name: "Vedaang Sharma", url: "https://github.com/gtathelegend" }],
   creator: "Vedaang Sharma",
   publisher: "Vedaang Sharma",
   category: "entertainment",

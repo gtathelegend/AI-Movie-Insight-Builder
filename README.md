@@ -163,7 +163,7 @@ Read the full [Privacy Policy](https://pop.vedaangsharma.in/privacy).
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/vedaangsharma2006/AI-Movie-Insight-Builder.git
+git clone https://github.com/gtathelegend/AI-Movie-Insight-Builder.git
 cd AI-Movie-Insight-Builder
 npm install
 ```
@@ -266,9 +266,8 @@ Full-stack developer · AI enthusiast
 
 POP is a passion project exploring how real audience evidence and AI-generated synthesis can be combined into a transparent, joyful movie discovery experience.
 
-- **GitHub**: [github.com/vedaangsharma2006](https://github.com/vedaangsharma2006)
-- **LinkedIn**: [linkedin.com/in/vedaang-sharma](https://www.linkedin.com/in/vedaang-sharma)
-- **Email**: [vedaangsharma2006@gmail.com](mailto:vedaangsharma2006@gmail.com)
+- **GitHub**: [github.com/gtathelegend](https://github.com/gtathelegend)
+- **Email**: [info@vedaangsharma.in](mailto:info@vedaangsharma.in)
 
 ---
 

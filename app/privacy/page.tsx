@@ -92,8 +92,8 @@ export default function PrivacyPage() {
           </p>
           <p>
             <strong>Vedaang Sharma</strong><br />
-            Email: <a href="mailto:vedaangsharma2006@gmail.com">vedaangsharma2006@gmail.com</a><br />
-            GitHub: <a href="https://github.com/vedaangsharma2006" target="_blank" rel="noopener noreferrer">github.com/vedaangsharma2006</a>
+            Email: <a href="mailto:info@vedaangsharma.in">info@vedaangsharma.in</a><br />
+            GitHub: <a href="https://github.com/gtathelegend" target="_blank" rel="noopener noreferrer">github.com/gtathelegend</a>
           </p>
         </section>
 

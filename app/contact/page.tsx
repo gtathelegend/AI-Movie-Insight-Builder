@@ -11,9 +11,8 @@ export const metadata: Metadata = {
 const DEVELOPER = {
   name: "Vedaang Sharma",
   role: "Full-stack developer · AI enthusiast",
-  github: "https://github.com/vedaangsharma2006",
-  linkedin: "https://www.linkedin.com/in/vedaang-sharma",
-  email: "vedaangsharma2006@gmail.com",
+  github: "https://github.com/gtathelegend",
+  email: "info@vedaangsharma.in",
 };
 
 export default function ContactPage() {
@@ -47,9 +46,9 @@ export default function ContactPage() {
         </section>
 
         <section className="subpage-card">
-          <h2>Social &amp; Developer Profiles</h2>
+          <h2>Developer Profile</h2>
           <p>
-            You can also find my open-source code and professional profile here:
+            You can find my open-source code and projects here:
           </p>
           <div className="subpage-maker-socials">
             <a
@@ -60,15 +59,6 @@ export default function ContactPage() {
               aria-label="Vedaang Sharma on GitHub (opens in new tab)"
             >
               GitHub Profile ↗
-            </a>
-            <a
-              href={DEVELOPER.linkedin}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="subpage-social-btn"
-              aria-label="Vedaang Sharma on LinkedIn (opens in new tab)"
-            >
-              LinkedIn Profile ↗
             </a>
           </div>
         </section>

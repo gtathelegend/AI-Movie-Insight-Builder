@@ -245,4 +245,27 @@ test.describe("Movie Analysis Pipeline E2E", () => {
     await expect(page.getByRole("main").getByRole("link", { name: /Send email to Vedaang/i })).toBeVisible();
     await expect(page.getByRole("main").getByRole("link", { name: /GitHub/i })).toBeVisible();
   });
+
+  test("Test 11: Filmstrip section renders in proper vertical document flow without horizontal page overflow", async ({ page }) => {
+    // Desktop Viewport
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+
+    const filmstrip = page.locator(".filmstrip-section");
+    await expect(filmstrip).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Eight reels of/i })).toBeVisible();
+
+    const desktopNoOverflow = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth);
+    expect(desktopNoOverflow).toBe(true);
+
+    // Mobile Viewport
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto("/");
+
+    await expect(filmstrip).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Eight reels of/i })).toBeVisible();
+
+    const mobileNoOverflow = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth);
+    expect(mobileNoOverflow).toBe(true);
+  });
 });
