@@ -78,11 +78,11 @@ export default function FooterSection() {
 
         <div className="footer-col">
           <h4 className="display">Discover</h4>
-          <Link href="/#trending" onClick={scrollToId("trending")}>Trending this week</Link>
-          <Link href="/#filmstrip" onClick={scrollToId("filmstrip")}>Now showing</Link>
+          <Link href="/movies">Movies Directory</Link>
+          <Link href="/movies/trending">Trending this week</Link>
+          <Link href="/movies/now-showing">Now showing</Link>
+          <Link href="/#faq" onClick={scrollToId("faq")}>Cinema FAQ</Link>
           <Link href="/#detail" onClick={scrollToId("detail")}>Movie spotlight</Link>
-          <Link href="/#emotions" onClick={scrollToId("emotions")}>Emotion fingerprint</Link>
-          <Link href="/#comments" onClick={scrollToId("comments")}>Viewer reviews</Link>
         </div>
 
         <div className="footer-col">
@@ -90,6 +90,7 @@ export default function FooterSection() {
           <Link href="/about">About POP</Link>
           <Link href="/privacy">Privacy Policy</Link>
           <Link href="/contact">Contact</Link>
+          <Link href="/sitemap.xml" target="_blank">Sitemap</Link>
         </div>
 
         <div className="footer-col">

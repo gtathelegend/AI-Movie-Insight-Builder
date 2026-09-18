@@ -25,23 +25,29 @@ const nunito = Nunito({
 
 export const metadata: Metadata = {
   title: {
-    default: "POP — AI Movie Insights · Find Your Next Favorite Movie",
-    template: "%s · POP Cinema",
+    default: "POP — AI Movie Insights, Ratings & Audience Reviews",
+    template: "%s | POP — AI Movie Insights",
   },
   description:
-    "POP is an AI-powered movie discovery and insight builder. Search any film to get honest viewer-driven scores, emotion fingerprints, character breakdowns, snack-sentiment correlations, and trending picks from TMDb — no algorithm slop, just real movie talk.",
+    "Explore movie ratings, real audience reviews, viewer sentiment, emotional insights and AI-powered movie analysis. Search films by title or IMDb ID.",
   applicationName: "POP — AI Movie Insight Builder",
   keywords: [
-    "AI movie insights",
+    "movies",
+    "movie reviews",
+    "movie ratings",
+    "audience reviews",
+    "IMDb",
+    "film reviews",
+    "cinema",
+    "audience sentiment",
+    "movie analysis",
+    "ratings",
+    "films",
+    "movie insights",
+    "AI movie analysis",
     "movie sentiment analysis",
-    "viewer reviews",
-    "TMDb trending movies",
-    "movie discovery",
-    "film recommendations",
-    "AI film analysis",
-    "movie emotion breakdown",
-    "honest movie scores",
     "now playing movies",
+    "trending movies",
     "POP Cinema",
     "AI Movie Insight Builder",
   ],
@@ -49,7 +55,7 @@ export const metadata: Metadata = {
   creator: "Vedaang Sharma",
   publisher: "Vedaang Sharma",
   category: "entertainment",
-  metadataBase: new URL("https://pop-cinema.vercel.app"),
+  metadataBase: new URL("https://pop.vedaangsharma.in"),
   alternates: {
     canonical: "/",
   },
@@ -60,25 +66,26 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    siteName: "POP — AI Movie Insight Builder",
-    title: "POP — AI Movie Insights · Find Your Next Favorite Movie",
+    siteName: "POP — AI Movie Insights",
+    title: "POP — AI Movie Insights, Ratings & Audience Reviews",
     description:
-      "Honest scores, real viewer voices, emotion fingerprints, and a buttered bucket of recommendations. AI-powered movie discovery without the algorithm slop.",
+      "Explore movie ratings, real audience reviews, viewer sentiment, emotional insights and AI-powered movie analysis. Search films by title or IMDb ID.",
+    url: "https://pop.vedaangsharma.in",
     locale: "en_US",
     images: [
       {
         url: "/pop-logo.png",
         width: 512,
         height: 512,
-        alt: "POP Cinema logo — a buttered popcorn bucket",
+        alt: "POP — AI Movie Insights Logo",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "POP — AI Movie Insights",
+    title: "POP — AI Movie Insights, Ratings & Audience Reviews",
     description:
-      "AI-powered movie discovery. Honest scores, emotion fingerprints, real viewer voices.",
+      "Explore movie ratings, real audience reviews, viewer sentiment, emotional insights and AI-powered movie analysis.",
     creator: "@vedaangsharma",
     images: ["/pop-logo.png"],
   },
@@ -100,11 +107,55 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+const WEBSITE_JSON_LD = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://pop.vedaangsharma.in/#website",
+      "url": "https://pop.vedaangsharma.in",
+      "name": "POP — AI Movie Insights",
+      "description": "AI-powered movie intelligence platform providing verified metadata, audience sentiment, review synthesis, and critic comparisons.",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://pop.vedaangsharma.in/?q={search_term_string}",
+        },
+        "query-input": "required name=search_term_string",
+      },
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://pop.vedaangsharma.in/#software",
+      "name": "POP Movie Insights",
+      "applicationCategory": "EntertainmentApplication",
+      "operatingSystem": "All",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Vedaang Sharma",
+        "url": "https://github.com/gtathelegend",
+      },
+    },
+  ],
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(WEBSITE_JSON_LD) }}
+        />
+      </head>
       <body className={`${bagelFatOne.variable} ${jetbrainsMono.variable} ${nunito.variable}`}>
         {children}
       </body>

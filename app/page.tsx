@@ -19,76 +19,14 @@ import SnackCorrelationSection from "@/components/pop/SnackCorrelationSection";
 import SourceTransparencySection from "@/components/pop/SourceTransparencySection";
 import FilmstripSection from "@/components/pop/FilmstripSection";
 import CommentsSection from "@/components/pop/CommentsSection";
+import FaqSection from "@/components/pop/FaqSection";
 import FooterSection from "@/components/pop/FooterSection";
 import PopcornRain from "@/components/pop/PopcornRain";
 
 import type { MovieResponse, ReviewSource } from "@/types/movie";
-import type { AnalyzeResponse, SSEEvent } from "@/types/ai";
+import type { AnalyzeResponse } from "@/types/ai";
 import type { SearchResult } from "@/app/api/search/route";
-
-async function streamAnalysis(
-  payload: {
-    imdbID: string;
-    reviews: string[];
-    movieTitle?: string;
-    movieYear?: string;
-    rottenTomatoes?: string;
-    sources?: ReviewSource[];
-    collectedCount?: number;
-  },
-  onStep: (msg: string) => void,
-): Promise<AnalyzeResponse> {
-  const response = await fetch("/api/analyze", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  if (!response.ok || !response.body) {
-    const err = (await response.json().catch(() => ({ error: "AI analysis is temporarily unavailable." }))) as {
-      error?: string;
-      message?: string;
-    };
-    throw new Error(err.message || err.error || "AI analysis is temporarily unavailable.");
-  }
-
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-
-    buffer += decoder.decode(value, { stream: true });
-
-    const messages = buffer.split("\n\n");
-    buffer = messages.pop() ?? "";
-
-    for (const message of messages) {
-      const trimmedMessage = message.trim();
-      if (!trimmedMessage.startsWith("data: ")) continue;
-
-      try {
-        const event = JSON.parse(trimmedMessage.slice(6)) as SSEEvent;
-
-        if (event.step === "complete") return event.data;
-        if (event.step === "error") {
-          throw new Error(event.message || event.error || "AI analysis is temporarily unavailable.");
-        }
-        if ("message" in event && event.message) {
-          onStep(event.message);
-        }
-      } catch (parseError) {
-        if (parseError instanceof Error && !parseError.message.includes("JSON")) {
-          throw parseError;
-        }
-      }
-    }
-  }
-
-  throw new Error("Analysis stream ended unexpectedly.");
-}
+import { streamAnalysis } from "@/lib/clientStream";
 
 async function resolveTmdbToImdb(tmdbId: number): Promise<string> {
   const r = await fetch(`/api/resolve?tmdbId=${tmdbId}`);
@@ -437,6 +375,8 @@ export default function Home() {
       <FilmstripSection onFrameClick={handleTrendingClick} />
 
       <SourceTransparencySection />
+
+      <FaqSection />
 
       <FooterSection />
     </>

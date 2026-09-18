@@ -15,6 +15,9 @@ export default function SubpageNav() {
       </Link>
 
       <div className="subpage-links">
+        <Link href="/movies" className={pathname.startsWith("/movies") ? "active" : ""}>
+          Movies
+        </Link>
         <Link href="/about" className={pathname === "/about" ? "active" : ""}>
           About
         </Link>

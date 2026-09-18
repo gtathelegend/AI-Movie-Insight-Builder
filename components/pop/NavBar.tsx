@@ -37,6 +37,7 @@ export default function NavBar({ onSearchClick, hasMovie = false }: NavBarProps)
         <span className="nav-brand-text display">POP</span>
       </div>
       <div className="nav-links">
+        <a href="/movies">Directory</a>
         <a href="#trending">Trending</a>
         {hasMovie && <a href="#detail">Spotlight</a>}
         <a href="#filmstrip">Now Showing</a>
