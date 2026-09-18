@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useReducedMotion } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { FILMSTRIP, FILMSTRIP_COLORS } from "./data";
@@ -25,7 +24,6 @@ export default function FilmstripSection({ onFrameClick }: FilmstripSectionProps
   const filmstripRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const [frames, setFrames] = useState<FilmstripFrame[] | null>(null);
-  const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
     let cancelled = false;
@@ -57,51 +55,11 @@ export default function FilmstripSection({ onFrameClick }: FilmstripSectionProps
     return [...source, ...source];
   })();
 
+  // Clean component lifecycle without DOM-mutating pin-spacers
   useEffect(() => {
+    // ScrollTrigger is registered for any other page transitions
     gsap.registerPlugin(ScrollTrigger);
-
-    const section = sectionRef.current;
-    const pinWrapper = pinWrapperRef.current;
-    const track = trackRef.current;
-    if (!section || !pinWrapper || !track) return;
-
-    const mm = gsap.matchMedia();
-
-    mm.add("(min-width: 768px)", () => {
-      if (shouldReduceMotion) return;
-
-      const trackWidth = track.scrollWidth;
-      const viewWidth = window.innerWidth;
-      const distance = Math.max(0, trackWidth - viewWidth + 80);
-
-      if (distance > 0) {
-        gsap.to(track, {
-          x: -distance,
-          ease: "none",
-          scrollTrigger: {
-            trigger: section,
-            start: "top top",
-            end: () => `+=${distance + 150}`,
-            pin: pinWrapper,
-            pinSpacing: true,
-            scrub: 1,
-            anticipatePin: 1,
-            invalidateOnRefresh: true,
-          },
-        });
-      }
-    });
-
-    // Refresh ScrollTrigger once DOM layout stabilizes
-    const timer = setTimeout(() => {
-      ScrollTrigger.refresh();
-    }, 200);
-
-    return () => {
-      clearTimeout(timer);
-      mm.revert();
-    };
-  }, [allFrames.length, shouldReduceMotion]);
+  }, []);
 
   return (
     <section className="filmstrip-section" id="filmstrip" ref={sectionRef} aria-label="Now Showing Filmstrip">

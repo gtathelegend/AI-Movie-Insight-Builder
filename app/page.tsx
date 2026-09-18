@@ -120,6 +120,13 @@ export default function Home() {
     gsap.registerPlugin(ScrollTrigger);
   }, []);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [movieData, insights]);
+
   // Core analysis pipeline given a known IMDb id
   const runAnalysis = useCallback(async (imdbID: string) => {
     const requestId = ++activeRequestIdRef.current;
@@ -424,11 +431,12 @@ export default function Home() {
             collectedCount={movieData.collectedCount ?? movieData.reviews.length}
             analyzedCount={insights?.analyzedCount}
           />
-          <SourceTransparencySection />
         </>
       )}
 
       <FilmstripSection onFrameClick={handleTrendingClick} />
+
+      <SourceTransparencySection />
 
       <FooterSection />
     </>

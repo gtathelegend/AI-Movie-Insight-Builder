@@ -571,6 +571,13 @@ section { position: relative; padding: 100px 36px; }
   border-bottom: 8px solid var(--ink);
   position: relative;
   padding: 24px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.filmstrip::-webkit-scrollbar {
+  display: none;
 }
 .filmstrip::before, .filmstrip::after {
   content: '';
@@ -589,6 +596,7 @@ section { position: relative; padding: 100px 36px; }
   display: flex;
   gap: 20px;
   padding: 0 36px;
+  width: max-content;
   will-change: transform;
 }
 .frame {
