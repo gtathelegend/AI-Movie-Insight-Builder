@@ -146,3 +146,17 @@ describe("AI Insights Zod Schema Validation", () => {
     expect(aiInsightsSchema.safeParse(invalid).success).toBe(false);
   });
 });
+
+describe("Review Source & Count Transparency", () => {
+  it("computes accurate collected vs analyzed counts", () => {
+    const reviews = Array.from({ length: 15 }, (_, i) => `Authentic audience review #${i + 1} with plenty of text characters.`);
+    const cleaned = cleanReviews(reviews, 15);
+    const collectedCount = cleaned.length;
+    const analyzedSlice = cleaned.slice(0, 10);
+    const analyzedCount = analyzedSlice.length;
+
+    expect(collectedCount).toBe(15);
+    expect(analyzedCount).toBe(10);
+    expect(analyzedSlice).toHaveLength(10);
+  });
+});

@@ -4,6 +4,7 @@ import { aiInsightsSchema } from "@/lib/schema";
 import { getCache, setCache } from "@/lib/cache";
 import { classifySentiment, hashInput, ApiError } from "@/lib/utils";
 import type { AnalyzeResponse, SSEEvent } from "@/types/ai";
+import type { ReviewSource } from "@/types/movie";
 
 // ─── DB import is gracefully optional ────────────────────────────────────────
 // If Prisma hasn't been set up yet (no DATABASE_URL / npx prisma generate not
@@ -25,6 +26,8 @@ type AnalyzePayload = {
   movieTitle?: string;
   movieYear?: string;
   rottenTomatoes?: string;
+  sources?: ReviewSource[];
+  collectedCount?: number;
 };
 
 // Converts "94%" → 94; returns undefined if value is missing or invalid.
@@ -55,6 +58,9 @@ export async function POST(request: NextRequest) {
   }
 
   const reviewsForAnalysis = reviews.slice(0, 10);
+  const analyzedCount = reviewsForAnalysis.length;
+  const collectedCount = payload.collectedCount ?? reviews.length;
+  const sources: ReviewSource[] = payload.sources ?? ["tmdb"];
   const imdbID = payload.imdbID;
   const cacheKey = hashInput(imdbID ? `v3:${imdbID}` : `v3:${reviewsForAnalysis.join("|")}`);
 
@@ -121,6 +127,9 @@ export async function POST(request: NextRequest) {
         const response: AnalyzeResponse = {
           ...validated.data,
           classification: classifySentiment(validated.data.sentimentScore),
+          analyzedCount,
+          collectedCount,
+          sources,
         };
 
         // ── Persist to both cache layers ──────────────────────────────────

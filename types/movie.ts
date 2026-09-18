@@ -12,8 +12,18 @@ export type Movie = {
   rottenTomatoes?: string;
 };
 
+export type ReviewSource = "tmdb" | "imdb";
+
+export type ReviewData = {
+  reviews: string[];
+  sources: ReviewSource[];
+  collectedCount: number;
+};
+
 export type MovieResponse = {
   movie: Movie;
   reviews: string[];
+  sources?: ReviewSource[];
+  collectedCount?: number;
   hasReviews?: boolean;
 };

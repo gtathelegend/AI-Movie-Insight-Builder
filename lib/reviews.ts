@@ -1,6 +1,7 @@
 import axios from "axios";
 import { scrapeIMDbReviews } from "@/lib/imdbScraper";
 import { cleanReviews } from "@/lib/utils";
+import type { ReviewData } from "@/types/movie";
 
 type TmdbFindResponse = {
   movie_results: Array<{ id: number }>;
@@ -51,20 +52,34 @@ export async function getTMDbReviews(imdbID: string): Promise<string[]> {
   }
 }
 
-export async function getReviews(imdbID: string): Promise<string[]> {
-  if (!imdbID) return [];
+export async function getReviews(imdbID: string): Promise<ReviewData> {
+  if (!imdbID) {
+    return { reviews: [], sources: [], collectedCount: 0 };
+  }
 
   try {
     // 1. Primary: TMDb audience reviews
-    let reviews = await getTMDbReviews(imdbID);
-
-    // 2. Fallback: IMDb scraping if TMDb returns zero reviews
-    if (!reviews || reviews.length === 0) {
-      reviews = await scrapeIMDbReviews(imdbID);
+    const tmdbReviews = await getTMDbReviews(imdbID);
+    if (tmdbReviews && tmdbReviews.length > 0) {
+      return {
+        reviews: tmdbReviews,
+        sources: ["tmdb"],
+        collectedCount: tmdbReviews.length,
+      };
     }
 
-    return reviews ?? [];
+    // 2. Fallback: IMDb scraping if TMDb returns zero reviews
+    const imdbReviews = await scrapeIMDbReviews(imdbID);
+    if (imdbReviews && imdbReviews.length > 0) {
+      return {
+        reviews: imdbReviews,
+        sources: ["imdb"],
+        collectedCount: imdbReviews.length,
+      };
+    }
+
+    return { reviews: [], sources: [], collectedCount: 0 };
   } catch {
-    return [];
+    return { reviews: [], sources: [], collectedCount: 0 };
   }
 }

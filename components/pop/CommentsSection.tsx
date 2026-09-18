@@ -4,25 +4,23 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { MOCK_COMMENTS, REVIEW_COLORS } from "./data";
+import type { ReviewSource } from "@/types/movie";
 
 type CommentsSectionProps = {
   reviews?: string[];
+  sources?: ReviewSource[];
+  collectedCount?: number;
+  analyzedCount?: number;
 };
 
 type CommentCard = {
   name: string;
-  handle: string;
+  sourceLabel: string;
   initials: string;
   color: string;
-  stars: number;
   text: string;
-  time: string;
-  likes: number;
-  replies: number;
+  isReal: boolean;
 };
-
-const STABLE_LIKES = [247, 182, 421, 156, 312, 198];
-const STABLE_REPLIES = [38, 22, 67, 19, 44, 28];
 
 function truncateWords(text: string, maxWords: number) {
   const words = text.trim().split(/\s+/).filter(Boolean);
@@ -30,38 +28,58 @@ function truncateWords(text: string, maxWords: number) {
   return { preview: words.slice(0, maxWords).join(" ") + "…", truncated: true };
 }
 
-function buildRealComments(reviews: string[]): CommentCard[] {
+function buildRealComments(reviews: string[], sources?: ReviewSource[]): CommentCard[] {
+  const sourceText = sources && sources.length > 0
+    ? sources.map((s) => (s === "tmdb" ? "TMDb" : "IMDb")).join(" + ")
+    : "Audience";
+
   return reviews.slice(0, 6).map((text, i) => ({
-    name: `Reviewer #${String(i + 1).padStart(2, "0")}`,
-    handle: `@viewer_${i + 1}`,
+    name: `Audience Review #${String(i + 1).padStart(2, "0")}`,
+    sourceLabel: `Source: ${sourceText}`,
     initials: String(i + 1).padStart(2, "0"),
     color: REVIEW_COLORS[i % REVIEW_COLORS.length],
-    stars: 4 + (i % 2),
     text,
-    time: "Recently",
-    likes: STABLE_LIKES[i] ?? 100,
-    replies: STABLE_REPLIES[i] ?? 10,
+    isReal: true,
   }));
 }
 
-export default function CommentsSection({ reviews }: CommentsSectionProps) {
+export default function CommentsSection({
+  reviews,
+  sources,
+  collectedCount,
+  analyzedCount,
+}: CommentsSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
-  const cards: CommentCard[] = reviews && reviews.length > 0
-    ? buildRealComments(reviews)
-    : MOCK_COMMENTS;
+  const hasRealReviews = reviews && reviews.length > 0;
+  const cards: CommentCard[] = hasRealReviews
+    ? buildRealComments(reviews, sources)
+    : MOCK_COMMENTS.map((c) => ({
+        name: c.name,
+        sourceLabel: c.handle,
+        initials: c.initials,
+        color: c.color,
+        text: c.text,
+        isReal: false,
+      }));
 
   const previewCards = useMemo(
     () =>
       cards.map((c) => {
-        const { preview, truncated } = truncateWords(c.text, 100);
+        const { preview, truncated } = truncateWords(c.text, 80);
         return { ...c, preview, truncated };
       }),
     [cards],
   );
 
   const active = activeIndex === null ? null : previewCards[activeIndex] ?? null;
+
+  const totalCollected = collectedCount ?? reviews?.length ?? 0;
+  const totalAnalyzed = analyzedCount ?? (hasRealReviews ? Math.min(totalCollected, 10) : 0);
+  const sourceDisplay = sources && sources.length > 0
+    ? sources.map((s) => (s === "tmdb" ? "TMDb" : "IMDb")).join(" + ")
+    : "TMDb / IMDb";
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -109,8 +127,8 @@ export default function CommentsSection({ reviews }: CommentsSectionProps) {
           What viewers are <span className="accent">whispering</span>.
         </h2>
         <p className="section-sub">
-          {reviews && reviews.length > 0
-            ? "Real audience reviews scraped from IMDb. No bots. No paid takes."
+          {hasRealReviews
+            ? `${totalCollected} audience review${totalCollected === 1 ? "" : "s"} collected · ${totalAnalyzed} analyzed by AI. Source: ${sourceDisplay}.`
             : "Real reviews from real people who actually saw the movie. No bots. No paid takes."}
         </p>
         <div className="comment-grid">
@@ -133,34 +151,16 @@ export default function CommentsSection({ reviews }: CommentsSectionProps) {
                 </div>
                 <div>
                   <div className="comment-name">{c.name}</div>
-                  <div className="comment-handle mono">{c.handle}</div>
+                  <div className="comment-handle mono">{c.sourceLabel}</div>
                 </div>
-              </div>
-              <div className="comment-stars">
-                {"★".repeat(c.stars)}{"☆".repeat(5 - c.stars)}
               </div>
               <div className="comment-text">&ldquo;{c.preview}&rdquo;</div>
               <div className="comment-foot">
-                <span className="comment-time mono">{c.time}</span>
+                <span className="comment-time mono" style={{ fontSize: 11, opacity: 0.8 }}>
+                  {c.isReal ? "★ Verified Audience Feedback" : "Recently"}
+                </span>
                 <div className="comment-likes">
-                  <button
-                    type="button"
-                    suppressHydrationWarning
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
-                  >
-                    ♥ {c.likes}
-                  </button>
-                  <button
-                    type="button"
-                    suppressHydrationWarning
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
-                  >
-                    💬 {c.replies}
-                  </button>
+                  <span style={{ fontSize: 12, opacity: 0.85 }}>Click to expand ↗</span>
                 </div>
               </div>
             </div>
@@ -183,7 +183,7 @@ export default function CommentsSection({ reviews }: CommentsSectionProps) {
                 </div>
                 <div>
                   <div className="comment-name">{active.name}</div>
-                  <div className="comment-handle mono">{active.handle}</div>
+                  <div className="comment-handle mono">{active.sourceLabel}</div>
                 </div>
               </div>
               <button
@@ -196,11 +196,9 @@ export default function CommentsSection({ reviews }: CommentsSectionProps) {
               </button>
             </div>
 
-            <div className="comment-stars">
-              {"★".repeat(active.stars)}{"☆".repeat(5 - active.stars)}
+            <div className="comment-modal-text" style={{ whiteSpace: "pre-wrap" }}>
+              &ldquo;{active.text}&rdquo;
             </div>
-
-            <div className="comment-modal-text">&ldquo;{active.text}&rdquo;</div>
           </div>
         </div>
       )}

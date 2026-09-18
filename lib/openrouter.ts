@@ -31,24 +31,36 @@ function getContentAsText(
 
 function buildPrompt(reviews: string[], ctx: AnalysisContext): string {
   const movieLine = ctx.movieTitle
-    ? `Movie: "${ctx.movieTitle}"${ctx.movieYear ? ` (${ctx.movieYear})` : ""}`
-    : "Movie: unknown";
+    ? `Title: "${ctx.movieTitle}"${ctx.movieYear ? ` (${ctx.movieYear})` : ""}`
+    : "Title: Unknown";
 
   const criticNote = typeof ctx.criticScore === "number"
-    ? `Critic score (Rotten Tomatoes): ${ctx.criticScore} — use this exact value for audienceVsCritics.criticScore`
-    : `No critic score available — set audienceVsCritics.criticScore to 50`;
+    ? `Critic Score (Rotten Tomatoes): ${ctx.criticScore} — set audienceVsCritics.criticScore to ${ctx.criticScore}`
+    : `Critic Score: None available — set audienceVsCritics.criticScore to 50`;
 
-  return `You are an expert film intelligence analyst. Analyze these ${reviews.length} audience reviews.
+  return `You are an expert film intelligence analyst. You are provided with verified audience reviews for the film specified below.
+
+=== MOVIE METADATA (Context Only) ===
 ${movieLine}
 ${criticNote}
 
-Return ONLY valid JSON matching this exact shape (no markdown, no code fences, no extra text):
+=== AUDIENCE REVIEW EVIDENCE ===
+Analyze ONLY the ${reviews.length} audience reviews below:
+${reviews.map((r, i) => `[Review #${i + 1}]:\n${r}`).join("\n---\n")}
+
+=== INSTRUCTIONS & CONSTRAINTS ===
+1. Analyze ONLY the supplied audience review text. Do NOT invent reviews, quotes, statistics, characters, or audience opinions.
+2. If the review evidence does not mention specific characters, return an empty array for "characters".
+3. For "clusters", the "representative" property MUST be a genuine quote or verbatim excerpt taken directly from the provided review text — NEVER fabricate a quotation.
+4. "sentimentScore": a float from -1.0 (very negative) to 1.0 (very positive) reflecting the aggregate sentiment of the provided reviews.
+5. All emotion values: integers 0-100 indicating the prevalence of each emotion across the provided reviews.
+6. Return ONLY valid JSON matching this exact shape (no markdown, no code fences, no extra text):
 
 {
-  "summary": "3-4 sentences: overall audience reception and defining qualities",
+  "summary": "3-4 sentences: overall audience reception and defining qualities strictly based on reviews",
   "keyThemes": ["3-6 recurring topics from the reviews"],
-  "pros": ["3-6 specific positives audiences praised"],
-  "cons": ["3-6 specific negatives audiences mentioned"],
+  "pros": ["3-6 specific positives praised in the reviews"],
+  "cons": ["3-6 specific negatives mentioned in the reviews"],
   "sentimentScore": 0.0,
   "emotions": {
     "excitement": 0,
@@ -63,25 +75,14 @@ Return ONLY valid JSON matching this exact shape (no markdown, no code fences, n
     { "name": "Character name (not actor)", "sentiment": "positive", "mentions": 3 }
   ],
   "clusters": [
-    { "label": "Short description of what this audience group said", "percentage": 35, "representative": "A short representative quote from a review" }
+    { "label": "Short description of audience opinion group", "percentage": 35, "representative": "Verbatim quote from supplied reviews" }
   ],
   "audienceVsCritics": {
     "audienceScore": 72,
     "criticScore": 0,
-    "verdict": "1-2 sentences comparing audience and critic reactions"
+    "verdict": "1-2 sentences comparing audience reception against critic score"
   }
-}
-
-Strict rules:
-- sentimentScore: float from -1.0 (very negative) to 1.0 (very positive)
-- All emotion values: integers 0-100 representing what % of reviews convey that feeling
-- characters: 2-5 most mentioned CHARACTERS (not actors) — omit if reviews name none
-- clusters: 3-5 distinct audience opinion groups; percentages must sum to ~100
-- audienceScore: integer 0-100 reflecting overall audience sentiment
-- criticScore: use the provided critic score value exactly as instructed above
-
-Reviews:
-${reviews.join("\n---\n")}`;
+}`;
 }
 
 export async function analyzeReviewsWithAI(

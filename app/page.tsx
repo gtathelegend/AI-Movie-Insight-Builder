@@ -20,7 +20,7 @@ import CommentsSection from "@/components/pop/CommentsSection";
 import FooterSection from "@/components/pop/FooterSection";
 import PopcornRain from "@/components/pop/PopcornRain";
 
-import type { MovieResponse } from "@/types/movie";
+import type { MovieResponse, ReviewSource } from "@/types/movie";
 import type { AnalyzeResponse, SSEEvent } from "@/types/ai";
 import type { SearchResult } from "@/app/api/search/route";
 
@@ -31,6 +31,8 @@ async function streamAnalysis(
     movieTitle?: string;
     movieYear?: string;
     rottenTomatoes?: string;
+    sources?: ReviewSource[];
+    collectedCount?: number;
   },
   onStep: (msg: string) => void,
 ): Promise<AnalyzeResponse> {
@@ -159,6 +161,8 @@ export default function Home() {
             movieTitle: movieJson.movie.title,
             movieYear: movieJson.movie.year,
             rottenTomatoes: movieJson.movie.rottenTomatoes,
+            sources: movieJson.sources,
+            collectedCount: movieJson.collectedCount ?? movieJson.reviews.length,
           },
           (msg) => {
             if (activeRequestIdRef.current === requestId) {
@@ -336,7 +340,12 @@ export default function Home() {
           <ClusterSection clusters={insights?.clusters} />
           <CharacterSection characters={insights?.characters} />
           <SnackCorrelationSection insights={insights} />
-          <CommentsSection reviews={movieData.reviews} />
+          <CommentsSection
+            reviews={movieData.reviews}
+            sources={movieData.sources ?? insights?.sources}
+            collectedCount={movieData.collectedCount ?? movieData.reviews.length}
+            analyzedCount={insights?.analyzedCount}
+          />
         </>
       )}
 

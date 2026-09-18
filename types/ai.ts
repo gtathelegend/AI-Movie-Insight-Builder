@@ -1,3 +1,5 @@
+import type { ReviewSource } from "./movie";
+
 export type SentimentClassification = "positive" | "mixed" | "negative";
 export type ViralPotential = "low" | "medium" | "high";
 export type StreamingStrength = "weak" | "average" | "strong";
@@ -45,6 +47,9 @@ export type AIInsights = {
 export type AnalyzeResponse = AIInsights & {
   classification: SentimentClassification;
   fromCache?: boolean;
+  analyzedCount?: number;
+  collectedCount?: number;
+  sources?: ReviewSource[];
 };
 
 export type SSEEvent =

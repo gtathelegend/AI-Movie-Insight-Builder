@@ -16,6 +16,8 @@ test.describe("Movie Analysis Pipeline E2E", () => {
             cast: ["Keanu Reeves", "Laurence Fishburne", "Carrie-Anne Moss"],
           },
           reviews: ["A groundbreaking cinematic masterpiece with visionary special effects."],
+          sources: ["tmdb"],
+          collectedCount: 1,
           hasReviews: true,
         }),
       });
@@ -25,7 +27,7 @@ test.describe("Movie Analysis Pipeline E2E", () => {
       await route.fulfill({
         status: 200,
         contentType: "text/event-stream",
-        body: `data: {"step":"checking_cache","message":"Checking cache..."}\n\ndata: {"step":"complete","data":{"summary":"Audiences adore the groundbreaking VFX and philosophical depth.","keyThemes":["Cyberpunk","Virtual Reality"],"pros":["Action scenes","World-building"],"cons":["Complex lore for some"],"sentimentScore":0.85,"classification":"positive","emotions":{"excitement":85,"nostalgia":60,"confusion":20,"fear":15,"sadness":10,"inspiration":75,"satisfaction":90},"characters":[{"name":"Neo","sentiment":"positive","mentions":10}],"clusters":[{"label":"VFX Acclaim","percentage":60,"representative":"Groundbreaking visuals."}],"audienceVsCritics":{"audienceScore":88,"criticScore":87,"verdict":"Critically acclaimed and beloved by audiences."}}}\n\n`,
+        body: `data: {"step":"checking_cache","message":"Checking cache..."}\n\ndata: {"step":"complete","data":{"summary":"Audiences adore the groundbreaking VFX and philosophical depth.","keyThemes":["Cyberpunk","Virtual Reality"],"pros":["Action scenes","World-building"],"cons":["Complex lore for some"],"sentimentScore":0.85,"classification":"positive","analyzedCount":1,"collectedCount":1,"sources":["tmdb"],"emotions":{"excitement":85,"nostalgia":60,"confusion":20,"fear":15,"sadness":10,"inspiration":75,"satisfaction":90},"characters":[{"name":"Neo","sentiment":"positive","mentions":10}],"clusters":[{"label":"VFX Acclaim","percentage":60,"representative":"Groundbreaking visuals."}],"audienceVsCritics":{"audienceScore":88,"criticScore":87,"verdict":"Critically acclaimed and beloved by audiences."}}}\n\n`,
       });
     });
 
@@ -36,6 +38,7 @@ test.describe("Movie Analysis Pipeline E2E", () => {
 
     await expect(page.getByRole("heading", { name: "The Matrix" })).toBeVisible();
     await expect(page.getByText("Keanu Reeves")).toBeVisible();
+    await expect(page.getByText("Source: TMDb").first()).toBeVisible();
   });
 
   test("Test 2: Invalid IMDb ID or empty input displays validation message", async ({ page }) => {

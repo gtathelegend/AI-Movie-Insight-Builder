@@ -1,6 +1,6 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
-import { cleanReviews } from "@/lib/utils";
+import { cleanReviews, isValidImdbId } from "@/lib/utils";
 
 function extractReviewTextFromJsonPayload(html: string): string[] {
   const matches = html.matchAll(/"reviewText":"((?:\\.|[^"\\])*)"/g);
@@ -21,7 +21,7 @@ function extractReviewTextFromJsonPayload(html: string): string[] {
 }
 
 export async function scrapeIMDbReviews(imdbID: string): Promise<string[]> {
-  if (!imdbID) return [];
+  if (!imdbID || !isValidImdbId(imdbID)) return [];
 
   try {
     const url = `https://www.imdb.com/title/${imdbID}/reviews`;
