@@ -571,13 +571,7 @@ section { position: relative; padding: 100px 36px; }
   border-bottom: 8px solid var(--ink);
   position: relative;
   padding: 24px 0;
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-.filmstrip::-webkit-scrollbar {
-  display: none;
+  overflow: hidden;
 }
 .filmstrip::before, .filmstrip::after {
   content: '';
