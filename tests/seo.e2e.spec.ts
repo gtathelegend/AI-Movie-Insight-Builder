@@ -234,5 +234,24 @@ test.describe("POP SEO & Search Discoverability E2E", () => {
     expect(data.short_name).toBe("POP");
     expect(data.icons.length).toBeGreaterThanOrEqual(2);
   });
+
+  test("Test 13: Missing route /this-reel-does-not-exist returns HTTP 404 and renders custom POP 404 UI", async ({ page }) => {
+    const response = await page.goto("/this-reel-does-not-exist");
+    expect(response?.status()).toBe(404);
+
+    await expect(page.getByRole("heading", { name: /This Reel Went Missing/i })).toBeVisible();
+    await expect(page.getByText(/ERROR 404: MISSING REEL/i)).toBeVisible();
+    await expect(page.getByRole("link", { name: /Back to POP/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Explore Movies/i })).toBeVisible();
+  });
+
+  test("Test 14: Invalid movie ID /movie/not-a-valid-id triggers notFound() and returns HTTP 404 with custom UI", async ({ page }) => {
+    const response = await page.goto("/movie/not-a-valid-id");
+    expect(response?.status()).toBe(404);
+
+    await expect(page.getByRole("heading", { name: /This Reel Went Missing/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Back to POP/i })).toBeVisible();
+  });
 });
+
 
