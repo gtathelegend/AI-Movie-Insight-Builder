@@ -114,4 +114,113 @@ test.describe("Movie Analysis Pipeline E2E", () => {
     // Informational message is visible
     await expect(page.getByText("Not enough public audience reviews were available for AI sentiment analysis.")).toBeVisible();
   });
+
+  test("Test 5: Title search fetches suggestions and resolves on pick", async ({ page }) => {
+    await page.route("**/api/search?q=Inception", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify([
+          {
+            tmdbId: 27205,
+            title: "Inception",
+            year: "2010",
+            poster: null,
+            voteAverage: 8.4,
+          },
+        ]),
+      });
+    });
+
+    await page.route("**/api/resolve?tmdbId=27205", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ imdbID: "tt1375666" }),
+      });
+    });
+
+    await page.route("**/api/movie?imdbID=tt1375666", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          movie: {
+            title: "Inception",
+            poster: "",
+            year: "2010",
+            rating: "8.8",
+            plot: "A thief who steals corporate secrets through the use of dream-sharing technology.",
+            cast: ["Leonardo DiCaprio", "Joseph Gordon-Levitt"],
+          },
+          reviews: ["A mind-bending heist thriller with stunning visual effects."],
+          sources: ["tmdb"],
+          collectedCount: 1,
+          hasReviews: true,
+        }),
+      });
+    });
+
+    await page.goto("/");
+    const searchInput = page.getByPlaceholder("Search by movie title or IMDb ID…");
+    await searchInput.fill("Inception");
+
+    // Click the autocomplete suggestion
+    const suggestionOption = page.getByRole("option", { name: /Inception/i });
+    await expect(suggestionOption).toBeVisible();
+    await suggestionOption.click();
+
+    // Verify metadata appears
+    await expect(page.getByRole("heading", { name: "Inception" })).toBeVisible();
+    await expect(page.getByText("Leonardo DiCaprio")).toBeVisible();
+  });
+
+  test("Test 6: Nonexistent title search shows clear error notice", async ({ page }) => {
+    await page.route("**/api/search?q=xyznonexistentmovie12345", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify([]),
+      });
+    });
+
+    await page.goto("/");
+    const searchInput = page.getByPlaceholder("Search by movie title or IMDb ID…");
+    await searchInput.fill("xyznonexistentmovie12345");
+    await page.getByRole("button", { name: /Pop it/i }).click();
+
+    await expect(page.getByText('No movies matched "xyznonexistentmovie12345". Try a different title.')).toBeVisible();
+  });
+
+  test("Test 7: Mobile viewport rendering displays cleanly without layout overflow", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 });
+
+    await page.route("**/api/movie?imdbID=tt0133093", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          movie: {
+            title: "The Matrix",
+            poster: "",
+            year: "1999",
+            rating: "8.7",
+            plot: "A computer hacker learns the truth.",
+            cast: ["Keanu Reeves"],
+          },
+          reviews: ["Incredible visuals and action."],
+          sources: ["tmdb"],
+          collectedCount: 1,
+          hasReviews: true,
+        }),
+      });
+    });
+
+    await page.goto("/");
+    const searchInput = page.getByPlaceholder("Search by movie title or IMDb ID…");
+    await searchInput.fill("tt0133093");
+    await page.getByRole("button", { name: /Pop it/i }).click();
+
+    await expect(page.getByRole("heading", { name: "The Matrix" })).toBeVisible();
+  });
 });

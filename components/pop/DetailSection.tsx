@@ -29,7 +29,15 @@ export default function DetailSection({ movie, insights, loading }: DetailSectio
   const sectionRef = useRef<HTMLElement>(null);
   const shouldReduceMotion = useReducedMotion();
   const [showShimmer, setShowShimmer] = useState(false);
+  const [posterError, setPosterError] = useState(false);
+  const [prevPoster, setPrevPoster] = useState(movie?.poster);
   const prevInsightsRef = useRef<AnalyzeResponse | null>(null);
+
+  // Reset poster error during render when movie poster prop changes
+  if (movie?.poster !== prevPoster) {
+    setPrevPoster(movie?.poster);
+    setPosterError(false);
+  }
 
   const isAnalyzed = Boolean(insights);
 
@@ -162,9 +170,13 @@ export default function DetailSection({ movie, insights, loading }: DetailSectio
           >
             {/* Poster */}
             <div className="detail-poster">
-              {movie?.poster ? (
+              {movie?.poster && movie.poster !== "N/A" && !posterError ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={movie.poster} alt={`${movie.title} poster`} />
+                <img
+                  src={movie.poster}
+                  alt={`${displayTitle} poster`}
+                  onError={() => setPosterError(true)}
+                />
               ) : (
                 <div className="detail-poster-text display">{displayTitle.toUpperCase()}</div>
               )}
@@ -224,9 +236,13 @@ export default function DetailSection({ movie, insights, loading }: DetailSectio
               }}
             >
               <div className="cinematic-poster">
-                {movie?.poster ? (
+                {movie?.poster && movie.poster !== "N/A" && !posterError ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={movie.poster} alt={`${movie.title} poster`} />
+                  <img
+                    src={movie.poster}
+                    alt={`${displayTitle} poster`}
+                    onError={() => setPosterError(true)}
+                  />
                 ) : (
                   <div className="cinematic-poster-text">{displayTitle.toUpperCase()}</div>
                 )}

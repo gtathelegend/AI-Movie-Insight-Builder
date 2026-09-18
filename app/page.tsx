@@ -105,6 +105,7 @@ async function searchTitle(query: string): Promise<SearchResult[]> {
 
 export default function Home() {
   const [query, setQuery] = useState("");
+  const [currentImdbId, setCurrentImdbId] = useState<string | null>(null);
   const [movieData, setMovieData] = useState<MovieResponse | null>(null);
   const [insights, setInsights] = useState<AnalyzeResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -128,6 +129,7 @@ export default function Home() {
     setInfoMessage(null);
     setMovieData(null);
     setInsights(null);
+    setCurrentImdbId(imdbID);
     setAnalysisStep("Finding movie...");
 
     try {
@@ -281,6 +283,50 @@ export default function Home() {
     }
   };
 
+  // Retry AI Analysis if movie data was already fetched
+  const retryAnalysis = async () => {
+    if (!currentImdbId || !movieData || !movieData.reviews || movieData.reviews.length === 0) return;
+    const imdbID = currentImdbId;
+    const requestId = ++activeRequestIdRef.current;
+
+    setLoading(true);
+    setError(null);
+    setAnalysisStep("AI is analyzing audience reviews...");
+
+    try {
+      const result = await streamAnalysis(
+        {
+          imdbID,
+          reviews: movieData.reviews.slice(0, 10),
+          movieTitle: movieData.movie.title,
+          movieYear: movieData.movie.year,
+          rottenTomatoes: movieData.movie.rottenTomatoes,
+          sources: movieData.sources,
+          collectedCount: movieData.collectedCount ?? movieData.reviews.length,
+        },
+        (msg) => {
+          if (activeRequestIdRef.current === requestId) {
+            setAnalysisStep(msg);
+          }
+        },
+      );
+
+      if (activeRequestIdRef.current !== requestId) return;
+      setInsights(result);
+      setTimeout(() => {
+        document.getElementById("emotions")?.scrollIntoView({ behavior: "smooth" });
+      }, 600);
+    } catch {
+      if (activeRequestIdRef.current !== requestId) return;
+      setError("AI analysis is temporarily unavailable.");
+    } finally {
+      if (activeRequestIdRef.current === requestId) {
+        setLoading(false);
+        setAnalysisStep(null);
+      }
+    }
+  };
+
   const marqueeTitle = movieData?.movie.title ?? "POP CINEMA";
   const marqueeScore = insights ? (insights.sentimentScore + 1) / 2 : 0.92;
 
@@ -319,13 +365,44 @@ export default function Home() {
         <div style={{ padding: "24px 36px", background: "var(--cream)" }}>
           <div
             className={`pop-error ${error ? "is-error" : "is-info"}`}
-            style={{ maxWidth: 680, margin: "0 auto" }}
+            style={{
+              maxWidth: 680,
+              margin: "0 auto",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 12,
+              flexWrap: "wrap",
+            }}
           >
-            <svg style={{ marginTop: 2, flexShrink: 0 }} width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
-              <path d="M8 5v3.5M8 11h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-            <span>{error ?? infoMessage}</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <svg style={{ marginTop: 2, flexShrink: 0 }} width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
+                <path d="M8 5v3.5M8 11h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+              <span>{error ?? infoMessage}</span>
+            </div>
+            {error && movieData && !insights && movieData.reviews && movieData.reviews.length > 0 && (
+              <button
+                type="button"
+                onClick={retryAnalysis}
+                disabled={loading}
+                style={{
+                  padding: "6px 14px",
+                  background: "var(--black)",
+                  color: "#fff",
+                  border: "2px solid var(--black)",
+                  fontWeight: 800,
+                  fontSize: 12,
+                  cursor: "pointer",
+                  flexShrink: 0,
+                  borderRadius: 4,
+                  boxShadow: "2px 2px 0px rgba(0,0,0,0.3)",
+                }}
+              >
+                Retry Analysis
+              </button>
+            )}
           </div>
         </div>
       )}

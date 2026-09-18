@@ -41,9 +41,9 @@ export default function AnalysisProgressStepper({
 
   return (
     <div style={{ padding: "32px 24px", background: "var(--cream)" }}>
-      <div className="stepper-card">
+      <div className="stepper-card" role="status" aria-live="polite" aria-atomic="true">
         <div className="stepper-title">
-          <span style={{ color: "var(--pink)", fontSize: 22 }}>🎬</span>
+          <span style={{ color: "var(--pink)", fontSize: 22 }} aria-hidden="true">🎬</span>
           <span>Analyzing Audience Intelligence</span>
         </div>
 

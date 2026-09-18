@@ -195,13 +195,19 @@ const HeroSection = forwardRef<HeroSectionHandle, HeroSectionProps>(
 
             <div className="search-wrap" ref={wrapRef}>
               <div className="search-box">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1A2E" strokeWidth="3" strokeLinecap="round">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1A2E" strokeWidth="3" strokeLinecap="round" aria-hidden="true">
                   <circle cx="11" cy="11" r="7" />
                   <line x1="16.5" y1="16.5" x2="21" y2="21" />
                 </svg>
                 <input
                   ref={inputRef}
+                  id="movie-search-input"
                   type="text"
+                  role="combobox"
+                  aria-expanded={showDropdown}
+                  aria-autocomplete="list"
+                  aria-controls="search-dropdown-list"
+                  aria-label="Search by movie title or IMDb ID"
                   value={query}
                   onChange={(e) => onChange(e.target.value)}
                   onKeyDown={handleKey}
@@ -217,6 +223,7 @@ const HeroSection = forwardRef<HeroSectionHandle, HeroSectionProps>(
                   className="search-btn"
                   onClick={onSubmit}
                   disabled={loading}
+                  aria-label={loading ? "Analyzing movie..." : "Pop it and analyze movie"}
                   suppressHydrationWarning
                 >
                   {loading ? (
@@ -224,7 +231,7 @@ const HeroSection = forwardRef<HeroSectionHandle, HeroSectionProps>(
                   ) : (
                     <>
                       Pop it
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" aria-hidden="true">
                         <path d="M5 12h14M13 6l6 6-6 6" />
                       </svg>
                     </>
@@ -233,12 +240,12 @@ const HeroSection = forwardRef<HeroSectionHandle, HeroSectionProps>(
               </div>
 
               {showDropdown && (
-                <div className="search-dropdown">
+                <div className="search-dropdown" id="search-dropdown-list" role="listbox" aria-label="Search results">
                   {searching && results.length === 0 && (
-                    <div className="search-dropdown-loading">Searching…</div>
+                    <div className="search-dropdown-loading" role="status">Searching…</div>
                   )}
                   {!searching && results.length === 0 && (
-                    <div className="search-dropdown-empty">
+                    <div className="search-dropdown-empty" role="status">
                       No matches for &ldquo;{query.trim()}&rdquo;
                     </div>
                   )}
@@ -246,6 +253,8 @@ const HeroSection = forwardRef<HeroSectionHandle, HeroSectionProps>(
                     <button
                       key={r.tmdbId}
                       type="button"
+                      role="option"
+                      aria-selected={i === activeIndex}
                       className={`search-dropdown-item ${i === activeIndex ? "active" : ""}`}
                       onMouseEnter={() => setActiveIndex(i)}
                       onClick={() => handlePick(r)}
@@ -254,6 +263,7 @@ const HeroSection = forwardRef<HeroSectionHandle, HeroSectionProps>(
                       <div
                         className="search-dropdown-poster"
                         style={r.poster ? { backgroundImage: `url(${r.poster})` } : undefined}
+                        aria-hidden="true"
                       />
                       <div className="search-dropdown-info">
                         <div className="search-dropdown-title">{r.title}</div>
@@ -269,13 +279,15 @@ const HeroSection = forwardRef<HeroSectionHandle, HeroSectionProps>(
                 </div>
               )}
 
-              <div className="search-suggestions">
+              <div className="search-suggestions" role="group" aria-label="Search suggestions">
                 <span className="mono" style={{ fontSize: 12, alignSelf: "center", opacity: 0.6 }}>TRY:</span>
                 {SEARCH_SUGGESTIONS.map((s) => (
                   <button
                     key={s.id}
+                    type="button"
                     className="chip"
                     onClick={() => onChange(s.label)}
+                    aria-label={`Search for ${s.label}`}
                     suppressHydrationWarning
                   >
                     {s.label}
